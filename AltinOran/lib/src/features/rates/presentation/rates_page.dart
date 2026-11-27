@@ -1321,66 +1321,26 @@ class _RateCardState extends ConsumerState<_RateCard> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        if (price != null)
-                          Text(
-                            '₺${formatMoney(price)}',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        if (change != null) ...[
-                          const SizedBox(width: 6),
-                          Icon(
-                            isUp
-                                ? Icons.arrow_upward_rounded
-                                : Icons.arrow_downward_rounded,
-                            size: 16,
-                            color: changeColor,
-                          ),
-                          const SizedBox(width: 2),
-                          Text(
-                            '${isUp ? '+' : ''}${change.toStringAsFixed(2)}%',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: changeColor,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(width: 10),
-                        Icon(
-                          Icons.show_chart_rounded,
-                          size: 20,
-                          color: theme.colorScheme.primary.withOpacity(0.8),
+                    if (price != null)
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('₺${formatMoney(price)}', maxLines: 1, overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                            if (change != null)
+                              Text('${isUp ? '+' : ''}${change.toStringAsFixed(2)}%',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: changeColor)),
+                          ],
                         ),
-                        const SizedBox(width: 6),
-                        Icon(
-                          Icons.more_horiz_rounded,
-                          size: 20,
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
-                        ),
-                        const SizedBox(width: 2),
-                        IconButton(
-                          onPressed: widget.onToggleFavorite,
-                          style: IconButton.styleFrom(
-                            minimumSize: const Size(40, 40),
-                            padding: EdgeInsets.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          icon: Icon(
-                            widget.isFavorite
-                                ? Icons.star_rounded
-                                : Icons.star_border_rounded,
-                            size: 22,
-                            color: widget.isFavorite ? Colors.amber : Colors.grey,
-                          ),
-                        ),
-                      ],
+                      ),
+                    IconButton(
+                      onPressed: widget.onToggleFavorite,
+                      tooltip: widget.isFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle',
+                      style: IconButton.styleFrom(minimumSize: const Size(40, 40), padding: EdgeInsets.zero),
+                      icon: Icon(widget.isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
+                        size: 22, color: widget.isFavorite ? Colors.amber : theme.colorScheme.outline),
                     ),
                   ],
                 ),
