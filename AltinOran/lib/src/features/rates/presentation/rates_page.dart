@@ -865,7 +865,7 @@ class RatesPage extends ConsumerWidget {
                       : ListView.separated(
                           itemCount: filteredItems.length,
                           separatorBuilder: (_, __) =>
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 4),
                           itemBuilder: (context, index) {
                             final item = filteredItems[index];
                             final isFavorite =
@@ -1009,66 +1009,27 @@ class _RatesCategoryBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(ratesProvider.notifier);
 
-    Widget chip(RateCategory cat, String label,
-        {IconData? icon, bool isStar = false}) {
-      final selected = state.category == cat;
-      final bgColor =
-          selected ? Theme.of(context).colorScheme.primary : Colors.transparent;
-      final fgColor = selected
-          ? Colors.white
-          : (isStar
-              ? Colors.amber
-              : Theme.of(context).colorScheme.onSurface.withOpacity(0.85));
-
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: TextButton.icon(
-          style: TextButton.styleFrom(
-            backgroundColor: bgColor,
-            foregroundColor: fgColor,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(999),
-              side: BorderSide(
-                color: selected
-                    ? Theme.of(context).colorScheme.primary
-                    : Colors.grey.withOpacity(0.4),
-              ),
-            ),
-          ),
-          onPressed: () => notifier.setCategory(cat),
-          icon: icon != null
-              ? Icon(
-                  icon,
-                  size: 18,
-                )
-              : const SizedBox.shrink(),
-          label: Text(
-            label,
-            overflow: TextOverflow.visible,
-          ),
-        ),
-      );
+    Widget chip(RateCategory category, String label) {
+      final selected = state.category == category;
+      final theme = Theme.of(context);
+      final dark = theme.brightness == Brightness.dark;
+      return Padding(padding: const EdgeInsets.only(right: 8), child: TextButton(
+        onPressed: () => notifier.setCategory(category),
+        style: TextButton.styleFrom(
+          backgroundColor: selected ? (dark ? const Color(0xFFE1C488) : const Color(0xFF252933)) : theme.colorScheme.surface,
+          foregroundColor: selected ? (dark ? const Color(0xFF1D1D1D) : Colors.white) : theme.colorScheme.onSurface,
+          padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
+          shape: const StadiumBorder(), textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+        ), child: Text(label),
+      ));
     }
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          chip(RateCategory.all, 'Tümü', icon: Icons.grid_view_rounded),
-          chip(RateCategory.currency, 'Döviz', icon: Icons.attach_money_rounded),
-          chip(RateCategory.metals, 'Altın / Maden', icon: Icons.diamond_rounded),
-          chip(RateCategory.coins, 'Coinler',
-              icon: Icons.currency_bitcoin_rounded),
-          chip(
-            RateCategory.favorites,
-            'Favorilerim',
-            icon: Icons.star_rounded,
-            isStar: true,
-          ),
-        ],
-      ),
-    );
+    return SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [
+      chip(RateCategory.all, 'Tümü'),
+      chip(RateCategory.currency, 'Döviz'),
+      chip(RateCategory.metals, 'Altın & maden'),
+      chip(RateCategory.coins, 'Kripto'),
+      chip(RateCategory.favorites, 'Favoriler'),
+    ]));
   }
 }
 
@@ -1207,24 +1168,15 @@ class _RateCardState extends ConsumerState<_RateCard> {
 
   Widget _metalAvatar(
       BuildContext context, RateItem item, Color assetColor, double radius) {
-    final isLight = _isLightColor(assetColor);
-    final textColor = isLight ? const Color(0xFF5A5A5A) : assetColor;
-    return CircleAvatar(
-      backgroundColor: assetColor.withOpacity(0.22),
-      foregroundColor: textColor,
-      radius: radius,
-      child: Text(
-        item.code,
-        style: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+    final theme = Theme.of(context);
+    final color = item.type == RateType.metal ? theme.colorScheme.primary : assetColor;
+    return Container(
+      width: radius * 2, height: radius * 2,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(color: color.withValues(alpha: .12), borderRadius: BorderRadius.circular(15)),
+      child: FittedBox(fit: BoxFit.scaleDown, child: Padding(padding: const EdgeInsets.all(5), child: Text(item.code,
+        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: item.type == RateType.metal ? color : theme.colorScheme.onSurface)))),
     );
-  }
-
-  bool _isLightColor(Color c) {
-    return c.computeLuminance() > 0.6;
   }
 
   @override
@@ -1272,7 +1224,7 @@ class _RateCardState extends ConsumerState<_RateCard> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

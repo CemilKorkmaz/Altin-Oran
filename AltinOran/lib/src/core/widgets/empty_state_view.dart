@@ -1,16 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Sayfalarda tutarlı boş durum: ikon + başlık + açıklama + isteğe bağlı aksiyon butonu.
 class EmptyStateView extends StatelessWidget {
-  const EmptyStateView({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.description,
-    this.actionLabel,
-    this.onAction,
-  });
-
+  const EmptyStateView({super.key, required this.icon, required this.title, required this.description, this.actionLabel, this.onAction});
   final IconData icon;
   final String title;
   final String description;
@@ -20,45 +11,22 @@ class EmptyStateView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 76, height: 76,
-              decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: .09), borderRadius: BorderRadius.circular(24)),
-              child: Icon(icon, size: 34, color: theme.colorScheme.primary),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              title,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              description,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.75),
-              ),
-            ),
-            if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: 20),
-              FilledButton.icon(
-                onPressed: onAction,
-                icon: const Icon(Icons.add_rounded, size: 20),
-                label: Text(actionLabel!),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
+    return Center(child: SingleChildScrollView(child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Container(width: 88, height: 88, decoration: BoxDecoration(
+          color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(30),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .035), blurRadius: 24, offset: const Offset(0, 8))],
+        ), child: Icon(icon, size: 36, color: theme.colorScheme.primary)),
+        const SizedBox(height: 24),
+        Text(title, style: theme.textTheme.titleLarge, textAlign: TextAlign.center),
+        const SizedBox(height: 10),
+        ConstrainedBox(constraints: const BoxConstraints(maxWidth: 300), child: Text(description, textAlign: TextAlign.center, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.outline))),
+        if (actionLabel != null && onAction != null) ...[
+          const SizedBox(height: 24),
+          FilledButton.icon(onPressed: onAction, icon: const Icon(Icons.add_rounded, size: 18), label: Text(actionLabel!)),
+        ],
+      ]),
+    )));
   }
 }

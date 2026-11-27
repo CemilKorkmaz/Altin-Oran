@@ -24,11 +24,21 @@ void main() {
       child: const BirikimPortfoyApp(),
     ));
     await tester.pump(const Duration(milliseconds: 200));
-    for (final label in ['Kurlar', 'Birikim', 'İstatistik', 'Hedefler', 'Ayarlar', 'Ana sayfa']) {
+    for (final label in ['Kurlar', 'Birikim', 'Hedefler', 'Diğer']) {
       final nav = find.byType(BottomNavigationBar);
       await tester.tap(find.descendant(of: nav, matching: find.text(label)));
       await tester.pump(const Duration(milliseconds: 250));
       expect(tester.takeException(), isNull, reason: '$label ekranında hata');
     }
+    for (final page in ['İstatistikler', 'Ayarlar']) {
+      await tester.tap(find.text(page).first);
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(tester.takeException(), isNull, reason: '$page ekranında hata');
+      await tester.pageBack();
+      await tester.pump(const Duration(milliseconds: 400));
+    }
+    await tester.tap(find.descendant(of: find.byType(BottomNavigationBar), matching: find.text('Ana sayfa')));
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(tester.takeException(), isNull);
   });
 }

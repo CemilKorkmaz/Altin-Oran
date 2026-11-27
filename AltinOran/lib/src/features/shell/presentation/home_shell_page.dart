@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,9 +31,8 @@ class _HomeShellPageState extends ConsumerState<HomeShellPage> {
     DashboardPage(),
     RatesPage(),
     PortfolioPage(),
-    StatsPage(),
     GoalsPage(),
-    SettingsPage(),
+    _MorePage(),
   ];
 
   @override
@@ -114,10 +115,12 @@ class _HomeShellPageState extends ConsumerState<HomeShellPage> {
           ),
           Container(
             decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
+              color: theme.colorScheme.surface.withValues(alpha: .94),
               border: Border(top: BorderSide(color: theme.dividerColor)),
             ),
-            child: SafeArea(
+            child: ClipRect(child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              child: SafeArea(
               top: false,
               child: BottomNavigationBar(
                 currentIndex: _index,
@@ -131,15 +134,67 @@ class _HomeShellPageState extends ConsumerState<HomeShellPage> {
                   BottomNavigationBarItem(icon: Icon(CupertinoIcons.house), activeIcon: Icon(CupertinoIcons.house_fill), label: 'Ana sayfa'),
                   BottomNavigationBarItem(icon: Icon(CupertinoIcons.chart_bar), activeIcon: Icon(CupertinoIcons.chart_bar_fill), label: 'Kurlar'),
                   BottomNavigationBarItem(icon: Icon(CupertinoIcons.creditcard), activeIcon: Icon(CupertinoIcons.creditcard_fill), label: 'Birikim'),
-                  BottomNavigationBarItem(icon: Icon(CupertinoIcons.chart_pie), activeIcon: Icon(CupertinoIcons.chart_pie_fill), label: 'İstatistik'),
                   BottomNavigationBarItem(icon: Icon(CupertinoIcons.flag), activeIcon: Icon(CupertinoIcons.flag_fill), label: 'Hedefler'),
-                  BottomNavigationBarItem(icon: Icon(CupertinoIcons.settings), activeIcon: Icon(CupertinoIcons.settings_solid), label: 'Ayarlar'),
+                  BottomNavigationBarItem(icon: Icon(CupertinoIcons.ellipsis_circle), activeIcon: Icon(CupertinoIcons.ellipsis_circle_fill), label: 'Diğer'),
                 ],
               ),
-            ),
+            ))),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _MorePage extends StatelessWidget {
+  const _MorePage();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SafeArea(bottom: false, child: Scaffold(
+      appBar: AppBar(title: const Text('Daha fazlası')),
+      body: ListView(padding: const EdgeInsets.fromLTRB(20, 10, 20, 30), children: [
+        Text('BİRİKİMİNİZ', style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.outline, letterSpacing: 1.1, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 10),
+        Card(child: Column(children: [
+          _MoreRow(icon: CupertinoIcons.chart_pie, title: 'İstatistikler', subtitle: 'Birikiminize daha yakından bakın', page: const StatsPage()),
+          Divider(height: 1, indent: 72, color: theme.dividerColor),
+          _MoreRow(icon: CupertinoIcons.settings, title: 'Ayarlar', subtitle: 'Görünüm, para birimi ve yedekleme', page: const SettingsPage()),
+        ])),
+        const SizedBox(height: 24),
+        Text('ALTIN ORAN', style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.outline, letterSpacing: 1.1, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 10),
+        Card(child: Padding(padding: const EdgeInsets.all(18), child: Row(children: [
+          Container(width: 40, height: 40, decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: .12), borderRadius: BorderRadius.circular(13)), child: Icon(CupertinoIcons.sparkles, color: theme.colorScheme.primary, size: 20)),
+          const SizedBox(width: 14),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Birikiminize alan açın', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 4),
+            Text('Tüm varlıklarınız, tek bir yerde.', style: theme.textTheme.bodySmall),
+          ])),
+        ]))),
+      ]),
+    ));
+  }
+}
+
+class _MoreRow extends StatelessWidget {
+  const _MoreRow({required this.icon, required this.title, required this.subtitle, required this.page});
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Widget page;
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+      leading: Container(width: 40, height: 40, decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: .10), borderRadius: BorderRadius.circular(13)), child: Icon(icon, size: 20, color: theme.colorScheme.primary)),
+      title: Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+      subtitle: Text(subtitle, style: theme.textTheme.bodySmall),
+      trailing: Icon(CupertinoIcons.chevron_forward, size: 17, color: theme.colorScheme.outline),
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => page)),
     );
   }
 }

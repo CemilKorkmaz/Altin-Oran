@@ -52,12 +52,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          tag=v0.2.0-test.1
+          tag=v0.3.0-test.1
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release $tag already exists; leaving it unchanged."
             exit 0
           fi
           gh release create "$tag" build/app/outputs/flutter-apk/app-release.apk#Altin-Oran-test.apk \
             --target "$GITHUB_SHA" --prerelease \
-            --title "Altın Oran 0.2.0 — Yeni tasarım test sürümü" \
+            --title "Altın Oran 0.3.0 — Yeni arayüz test sürümü" \
             --notes-file ../RELEASE-NOTES.md

@@ -764,7 +764,7 @@ class _EmptyStatsView extends StatelessWidget {
     return const EmptyStateView(
       icon: Icons.insights_outlined,
       title: 'Henüz istatistik yok',
-      description: 'Hadi bakalım, birkaç yatırım ekle. Portföy dağılımın ve kâr/zarar grafikleri burada belirecek.',
+      description: 'İşlemlerinizi ekledikçe birikiminizin gelişimi burada görünecek.',
     );
   }
 }

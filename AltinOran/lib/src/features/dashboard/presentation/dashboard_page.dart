@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/widgets/section_header.dart';
@@ -69,7 +70,8 @@ class DashboardPage extends ConsumerWidget {
       bottom: false,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Altın Oran'),
+          title: const Text('Genel bakış'),
+          actions: [Padding(padding: const EdgeInsets.only(right: 20), child: Center(child: Container(width: 38, height: 38, decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(13)), child: Icon(CupertinoIcons.sparkles, size: 18, color: Theme.of(context).colorScheme.primary))))],
         ),
         body: RefreshIndicator(
           onRefresh: () async {
@@ -88,10 +90,8 @@ class DashboardPage extends ConsumerWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 4, 4, 14),
-                  child: Text('BİRİKİMİNİZ, BİR BAKIŞTA', style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.primary, letterSpacing: 1.3, fontWeight: FontWeight.w700,
-                  )),
+                  padding: const EdgeInsets.fromLTRB(4, 0, 4, 18),
+                  child: Text('Birikiminiz, bir bakışta.', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.outline)),
                 ),
                 _PortfolioHero(
                   amount: formatDisplayCurrency(
@@ -147,42 +147,34 @@ class _PortfolioHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final dark = theme.brightness == Brightness.dark;
-    final tint = dark ? const Color(0xFF263C32) : const Color(0xFFE6EEE6);
-    final profitColor = profitLoss < 0 ? const Color(0xFFB76660) : theme.colorScheme.primary;
+    const ink = Color(0xFF1D222C);
+    const gold = Color(0xFFE4C68B);
     return Material(
-      color: tint,
-      borderRadius: BorderRadius.circular(26),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(26),
-        child: Padding(
-          padding: const EdgeInsets.all(22),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Expanded(child: Text(amountLabel, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: .7)))),
-              Icon(Icons.north_east_rounded, size: 18, color: theme.colorScheme.primary),
-            ]),
-            const SizedBox(height: 10),
-            Text(amount, style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -1.1)),
-            const SizedBox(height: 20),
-            Container(height: 1, color: theme.colorScheme.primary.withValues(alpha: .15)),
-            const SizedBox(height: 16),
-            Row(children: [
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Tahmini kâr / zarar', style: theme.textTheme.bodySmall),
-                const SizedBox(height: 4),
-                Text('${profitText == '—' ? '' : profitLoss < 0 ? '−' : profitLoss > 0 ? '+' : ''}$profitText', style: theme.textTheme.titleMedium?.copyWith(color: profitColor, fontWeight: FontWeight.w700)),
-              ])),
-              Icon(Icons.chevron_right_rounded, color: theme.colorScheme.primary),
-            ]),
-            if (todayText != 'Bugün: —') ...[
-              const SizedBox(height: 8),
-              Text(todayText, style: theme.textTheme.bodySmall),
-            ],
+      color: ink, borderRadius: BorderRadius.circular(26), clipBehavior: Clip.antiAlias,
+      child: InkWell(onTap: onTap, child: Stack(children: [
+        Positioned(right: -52, top: -70, child: Container(width: 180, height: 180,
+          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white.withValues(alpha: .07), width: 28)))),
+        Padding(padding: const EdgeInsets.all(24), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Container(width: 36, height: 36, decoration: BoxDecoration(color: gold.withValues(alpha: .16), borderRadius: BorderRadius.circular(12)),
+              child: const Icon(CupertinoIcons.chart_pie_fill, color: gold, size: 17)),
+            const SizedBox(width: 10),
+            const Expanded(child: Text('PORTFÖY ÖZETİ', style: TextStyle(color: Color(0xFFD6C6A8), fontSize: 10, letterSpacing: 1.4, fontWeight: FontWeight.w700))),
+            Icon(CupertinoIcons.arrow_up_right, color: Colors.white.withValues(alpha: .55), size: 17),
           ]),
-        ),
-      ),
+          const SizedBox(height: 26),
+          Text(amountLabel, style: theme.textTheme.bodySmall?.copyWith(color: const Color(0xFFBEC1C8))),
+          const SizedBox(height: 7),
+          Text(amount, maxLines: 2, style: theme.textTheme.headlineMedium?.copyWith(color: Colors.white, fontSize: 32, height: 1.1, fontWeight: FontWeight.w700, letterSpacing: -1.3)),
+          const SizedBox(height: 24),
+          Container(height: 1, color: Colors.white.withValues(alpha: .13)),
+          const SizedBox(height: 16),
+          Row(children: [
+            Expanded(child: Text('Tahmini kâr / zarar', style: theme.textTheme.bodySmall?.copyWith(color: const Color(0xFFBEC1C8)))),
+            Flexible(child: Text('${profitText == '—' ? '' : profitLoss < 0 ? '−' : profitLoss > 0 ? '+' : ''}$profitText', textAlign: TextAlign.end, style: theme.textTheme.titleSmall?.copyWith(color: gold, fontWeight: FontWeight.w700))),
+          ]),
+        ])),
+      ])),
     );
   }
 }
@@ -286,15 +278,13 @@ class PortfolioDistributionCard extends ConsumerWidget {
 
     if (transactions.isEmpty) {
       return Card(
-        child: SizedBox(
-          height: 180,
-          child: Center(
-            child: Text(
-              'Henüz yatırım eklenmedi.\n\nPortföyün dağılımını görmek için sağ alttan \"Yatırım Ekle\" butonunu kullan.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(children: [
+            Icon(CupertinoIcons.chart_pie, color: Theme.of(context).colorScheme.primary, size: 25),
+            const SizedBox(width: 14),
+            Expanded(child: Text('İlk işleminizi eklediğinizde dağılımınız burada görünecek.', style: Theme.of(context).textTheme.bodySmall)),
+          ]),
         ),
       );
     }
@@ -1024,25 +1014,7 @@ class GoldPriceCard extends ConsumerStatefulWidget {
   ConsumerState<GoldPriceCard> createState() => _GoldPriceCardState();
 }
 
-class _GoldPriceCardState extends ConsumerState<GoldPriceCard>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _liveController;
-
-  @override
-  void initState() {
-    super.initState();
-    _liveController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _liveController.dispose();
-    super.dispose();
-  }
-
+class _GoldPriceCardState extends ConsumerState<GoldPriceCard> {
   @override
   Widget build(BuildContext context) {
     final state = widget.state;
@@ -1055,28 +1027,6 @@ class _GoldPriceCardState extends ConsumerState<GoldPriceCard>
     final asset = ref.watch(supportedAssetByIdProvider(selectedId));
     final allAssets = ref.watch(allSupportedAssetsProvider);
     final useTry = region == PriceRegion.turkey;
-
-    IconData trendIcon;
-    Color trendColor;
-    switch (state.trend) {
-      case PriceTrend.up:
-        trendIcon = Icons.arrow_upward_rounded;
-        trendColor = Colors.green;
-        break;
-      case PriceTrend.down:
-        trendIcon = Icons.arrow_downward_rounded;
-        trendColor = Colors.red;
-        break;
-      case PriceTrend.flat:
-        trendIcon = Icons.horizontal_rule_rounded;
-        trendColor = theme.colorScheme.primary;
-        break;
-    }
-
-    final regionLabel = switch (region) {
-      PriceRegion.turkey => 'Türkiye (Kapalıçarşı / Banka ort.)',
-      PriceRegion.usa => 'ABD (COMEX / Kitco / Bloomberg)',
-    };
 
     // Gram altın ayarı (ana sayfada hangi ayar gösterilsin)
     final gramPurity = ref.watch(selectedGramGoldPurityProvider);
@@ -1105,7 +1055,6 @@ class _GoldPriceCardState extends ConsumerState<GoldPriceCard>
     // Seçili varlığa göre fiyat metni (altın = önce Bigpara, sonra gold API; diğerleri = assetPriceService)
     String priceText;
     String subtitle;
-    bool showGoldError = false;
     if (selectedId == 'gold_gram') {
       double? basePrice;
       if (useTry && bigparaByKey != null) {
@@ -1129,11 +1078,9 @@ class _GoldPriceCardState extends ConsumerState<GoldPriceCard>
         subtitle = state.price != null && basePrice == state.price!.pricePerGram
             ? 'Son güncelleme: ${state.price!.lastUpdated.toLocal().toString().substring(0, 16)}'
             : 'Kaynak: Bigpara';
-        showGoldError = false;
       } else {
         priceText = 'Henüz veri yok';
         subtitle = 'Fiyat alınamadı. Yenileyerek tekrar deneyin.';
-        showGoldError = state.errorMessage != null;
       }
     } else if (asset != null) {
       final res = selectedId == nonGoldState.assetId ? nonGoldState.result : null;
@@ -1160,226 +1107,60 @@ class _GoldPriceCardState extends ConsumerState<GoldPriceCard>
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Üst satır: Canlı göstergesi (sol) ve Yenile butonu (sağ) aynı hizada
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                FadeTransition(
-                  opacity: Tween<double>(begin: 0.4, end: 1.0).animate(
-                    CurvedAnimation(
-                      parent: _liveController,
-                      curve: Curves.easeInOut,
-                    ),
-                  ),
-                  child: ScaleTransition(
-                    scale: Tween<double>(begin: 0.96, end: 1.04).animate(
-                      CurvedAnimation(
-                        parent: _liveController,
-                        curve: Curves.easeInOut,
-                      ),
-                    ),
-                    child: Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.circle, size: 8, color: Colors.green),
-                          SizedBox(width: 6),
-                          Text(
-                            'Piyasa',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.green,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                IconButton(
-                  onPressed: (selectedId == 'gold_gram' && state.isLoading) ||
-                          (selectedId != 'gold_gram' && nonGoldState.isLoading)
-                      ? null
-                      : () {
-                          if (selectedId == 'gold_gram') {
-                            onRefresh();
-                          } else {
-                            ref
-                                .read(liveNonGoldPriceProvider.notifier)
-                                .fetch(selectedId, useTry);
-                          }
-                        },
-                  icon: const Icon(Icons.refresh_rounded),
-                  tooltip: 'Fiyatı yenile',
-                  style: IconButton.styleFrom(
-                    minimumSize: const Size(40, 40),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                ),
-              ],
+        padding: const EdgeInsets.all(20),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Container(width: 42, height: 42, decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withValues(alpha: .10), borderRadius: BorderRadius.circular(14)),
+              child: Icon(CupertinoIcons.chart_bar_alt_fill, color: theme.colorScheme.primary, size: 20)),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(selectedLabel, maxLines: 1, overflow: TextOverflow.ellipsis, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 3),
+              Text('Referans fiyat', style: theme.textTheme.bodySmall),
+            ])),
+            IconButton(
+              onPressed: (selectedId == 'gold_gram' && state.isLoading) || (selectedId != 'gold_gram' && nonGoldState.isLoading)
+                  ? null : () { if (selectedId == 'gold_gram') { onRefresh(); } else { ref.read(liveNonGoldPriceProvider.notifier).fetch(selectedId, useTry); } },
+              icon: const Icon(CupertinoIcons.refresh, size: 20), tooltip: 'Fiyatı yenile',
             ),
-            const SizedBox(height: 10),
-            Text(
-              '$selectedLabel Fiyatı',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Varlık seçimi: canlı listesindekiler + Varlık ekle (katalogdan seçim)
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  ...liveIds.map((id) {
-                    SupportedAsset? a;
-                    try {
-                      a = allAssets.firstWhere((x) => x.id == id);
-                    } catch (_) {}
-                    if (a == null) return const SizedBox.shrink();
-                    return _assetChip(context, ref, a.id, a.name, selectedId);
-                  }),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: ActionChip(
-                      avatar: const Icon(Icons.add_rounded, size: 18, color: Colors.green),
-                      label: const Text('Varlık ekle'),
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const SelectAssetForLivePage(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          ]),
+          const SizedBox(height: 22),
+          Text(priceText, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -.8)),
+          const SizedBox(height: 6),
+          Text(subtitle, style: theme.textTheme.bodySmall),
+          const SizedBox(height: 20),
+          Divider(height: 1, color: theme.dividerColor),
+          const SizedBox(height: 14),
+          SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [
+            ...liveIds.map((id) {
+              SupportedAsset? a;
+              try { a = allAssets.firstWhere((x) => x.id == id); } catch (_) {}
+              if (a == null) return const SizedBox.shrink();
+              return _assetChip(context, ref, a.id, a.name, selectedId);
+            }),
+            ActionChip(avatar: Icon(CupertinoIcons.add, size: 16, color: theme.colorScheme.primary), label: const Text('Ekle'),
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SelectAssetForLivePage()))),
+          ])),
+          if (selectedId == 'gold_gram') ...[
             const SizedBox(height: 12),
-            // Gram altın seçiliyse ayar seçici (24, 22, 18, 14) — varlık seçeneğinin altında
-            if (selectedId == 'gold_gram') ...[
-              Text(
-                'Gram altın ayarı',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.8),
-                ),
-              ),
-              const SizedBox(height: 6),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _gramPurityChip(context, ref, GoldPurity.carat24, '24 Ayar', gramPurity),
-                    const SizedBox(width: 8),
-                    _gramPurityChip(context, ref, GoldPurity.carat22, '22 Ayar', gramPurity),
-                    const SizedBox(width: 8),
-                    _gramPurityChip(context, ref, GoldPurity.carat18, '18 Ayar', gramPurity),
-                    const SizedBox(width: 8),
-                    _gramPurityChip(context, ref, GoldPurity.carat14, '14 Ayar', gramPurity),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
-            DropdownButtonFormField<PriceRegion>(
-              value: region,
-              decoration: const InputDecoration(
-                labelText: 'Bölge / Kaynak',
-              ),
-              items: const [
-                DropdownMenuItem(
-                  value: PriceRegion.turkey,
-                  child: Text('Türkiye'),
-                ),
-                DropdownMenuItem(
-                  value: PriceRegion.usa,
-                  child: Text('ABD'),
-                ),
-              ],
-              onChanged: (selectedId == 'gold_gram' && state.isLoading) ||
-                      (selectedId != 'gold_gram' && nonGoldState.isLoading)
-                  ? null
-                  : (value) {
-                      if (value != null) onRegionChanged(value);
-                    },
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: trendColor.withOpacity(0.1),
-                  ),
-                  child: Icon(
-                    trendIcon,
-                    color: trendColor,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        priceText,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        regionLabel,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.7),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            if (selectedId == 'gold_gram' && showGoldError && state.errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                state.errorMessage!,
-                style: const TextStyle(color: Colors.red, fontSize: 12),
-              ),
-            ],
-            if (selectedId != 'gold_gram' &&
-                nonGoldState.assetId == selectedId &&
-                nonGoldState.result?.error != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                nonGoldState.result!.error!,
-                style: const TextStyle(color: Colors.red, fontSize: 12),
-              ),
-            ],
+            SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [
+              _gramPurityChip(context, ref, GoldPurity.carat24, '24 ayar', gramPurity),
+              const SizedBox(width: 6), _gramPurityChip(context, ref, GoldPurity.carat22, '22 ayar', gramPurity),
+              const SizedBox(width: 6), _gramPurityChip(context, ref, GoldPurity.carat18, '18 ayar', gramPurity),
+              const SizedBox(width: 6), _gramPurityChip(context, ref, GoldPurity.carat14, '14 ayar', gramPurity),
+            ])),
           ],
-        ),
+          const SizedBox(height: 16),
+          Row(children: [
+            Expanded(child: Text('Para birimi', style: theme.textTheme.bodySmall)),
+            CupertinoSlidingSegmentedControl<PriceRegion>(
+              groupValue: region,
+              children: const {PriceRegion.turkey: Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('TL')), PriceRegion.usa: Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('USD'))},
+              onValueChanged: (value) { if (value != null) onRegionChanged(value); },
+            ),
+          ]),
+        ]),
       ),
     );
   }

@@ -57,7 +57,7 @@ class _GoalsPageState extends ConsumerState<GoalsPage> {
                   );
                 },
               ),
-        floatingActionButton: FloatingActionButton.extended(
+        floatingActionButton: list.isEmpty ? null : FloatingActionButton.extended(
           onPressed: () => _showAddGoalSheet(context, ref),
           icon: const Icon(Icons.add_rounded),
           label: const Text('Hedef Ekle'),
@@ -151,7 +151,7 @@ class _EmptyGoalsView extends StatelessWidget {
     return EmptyStateView(
       icon: Icons.flag_rounded,
       title: 'Henüz hedef yok',
-      description: 'Hadi bakalım, varlık (örn. 50 gr altın) veya kâr hedefi (örn. 50.000 ₺) ekle. İstersen fiyat alarmı da bağlayabilirsin.',
+      description: 'Kendinize bir hedef belirleyin, ilerlemenizi adım adım takip edin.',
       actionLabel: 'Hedef Ekle',
       onAction: onAddGoal,
     );

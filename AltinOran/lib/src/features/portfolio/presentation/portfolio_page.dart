@@ -60,7 +60,7 @@ class PortfolioPage extends ConsumerWidget {
       bottom: false,
       child: Scaffold(
         appBar: AppBar(
-          centerTitle: true,
+          centerTitle: false,
           title: const Text('Birikimlerim'),
           actions: [
             Padding(
@@ -609,7 +609,7 @@ class _EmptyPortfolioView extends StatelessWidget {
     return EmptyStateView(
       icon: Icons.account_balance_wallet_outlined,
       title: 'Henüz portföyünde kayıtlı varlık yok',
-      description: 'Hadi bakalım, ilk yatırımını ekle. Altın, döviz veya kripto alış/satışını kaydedebilirsin.',
+      description: 'Altın, döviz ve diğer varlıklarınızı ekleyerek birikiminizi takip etmeye başlayın.',
       actionLabel: 'Yatırım Ekle',
       onAction: onAdd,
     );

@@ -2,7 +2,7 @@ name: birikim_portfoy
 description: Ev kullanıcısına yönelik birikim ve portföy takip uygulaması.
 publish_to: "none"
 
-version: 0.2.0+2
+version: 0.3.0+3
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -37,4 +37,8 @@ flutter_icons:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter.ttf
 
