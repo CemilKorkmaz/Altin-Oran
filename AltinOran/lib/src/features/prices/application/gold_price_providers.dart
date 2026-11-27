@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,10 +24,8 @@ final httpClientProvider = Provider<http.Client>((ref) {
 class TurkishMarketNotifier extends StateNotifier<TurkishMarketSnapshot?> {
   TurkishMarketNotifier(this._client) : super(null) {
     refresh();
-    _timer = Timer.periodic(const Duration(minutes: 1), (_) => refresh());
   }
   final TurkishMarketClient _client;
-  late final Timer _timer;
   Future<TurkishMarketSnapshot?>? _inFlight;
 
   Future<TurkishMarketSnapshot?> refresh() {
@@ -44,8 +41,6 @@ class TurkishMarketNotifier extends StateNotifier<TurkishMarketSnapshot?> {
     return result;
   }
 
-  @override
-  void dispose() { _timer.cancel(); super.dispose(); }
 }
 
 final turkishMarketProvider = StateNotifierProvider<TurkishMarketNotifier, TurkishMarketSnapshot?>((ref) {

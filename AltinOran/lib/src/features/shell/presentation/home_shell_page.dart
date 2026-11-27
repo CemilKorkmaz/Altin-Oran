@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +8,7 @@ import '../../alerts/application/notification_service.dart';
 import '../../alerts/application/price_alarm_providers.dart';
 import '../../alerts/presentation/alarm_notification_banner.dart';
 import '../../dashboard/presentation/dashboard_page.dart';
+import '../../prices/application/gold_price_providers.dart';
 import '../../rates/presentation/rates_page.dart';
 import '../../portfolio/presentation/portfolio_page.dart';
 import '../../stats/presentation/stats_page.dart';
@@ -26,6 +29,7 @@ class _HomeShellPageState extends ConsumerState<HomeShellPage> {
   int _index = 0;
   final Set<int> _visited = {0};
   bool _launchChecked = false;
+  Timer? _marketTimer;
 
   final _pages = const [
     DashboardPage(),
@@ -38,12 +42,22 @@ class _HomeShellPageState extends ConsumerState<HomeShellPage> {
   @override
   void initState() {
     super.initState();
+    _marketTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) ref.read(turkishMarketProvider.notifier).refresh();
+    });
     NotificationService.setOnNotificationTap((data) {
       if (mounted) {
         ref.read(pendingAlarmProvider.notifier).state = data;
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkLaunchFromNotification());
+  }
+
+  @override
+  void dispose() {
+    _marketTimer?.cancel();
+    NotificationService.setOnNotificationTap(null);
+    super.dispose();
   }
 
   Future<void> _checkLaunchFromNotification() async {
