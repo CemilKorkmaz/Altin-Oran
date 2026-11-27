@@ -1,0 +1,11 @@
+# Imported archives are not source code
+/google_drive/
+*.zip
+**/node_modules/
+**/.gradle/
+**/local.properties
+**/key.properties
+**/*.jks
+**/*.keystore
+**/.env
+**/.env.*
