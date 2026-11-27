@@ -6,6 +6,7 @@ import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:birikim_portfoy/src/app.dart';
 import 'package:birikim_portfoy/src/features/prices/application/gold_price_providers.dart';
+import 'package:birikim_portfoy/src/features/rates/presentation/rates_page.dart';
 
 void main() {
   testWidgets('small phone can open every main tab without overflow', (tester) async {
@@ -29,12 +30,15 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('Kripto').first);
     await tester.pump();
-    expect(find.text('Bitcoin'), findsWidgets);
+    final ratesState = tester.state(find.byType(RatesPage));
+    final container = ProviderScope.containerOf(tester.element(find.byType(RatesPage)));
+    expect(container.read(ratesProvider).category, RateCategory.coins);
     await tester.tap(find.descendant(of: bar, matching: find.text('Hedefler')));
     await tester.pump();
     await tester.tap(find.descendant(of: bar, matching: find.text('Kurlar')));
     await tester.pump();
-    expect(find.text('Bitcoin'), findsWidgets, reason: 'Sekme filtresi korunmalı');
+    expect(tester.state(find.byType(RatesPage)), same(ratesState));
+    expect(container.read(ratesProvider).category, RateCategory.coins, reason: 'Sekme filtresi korunmalı');
     expect(tester.takeException(), isNull);
     for (final label in ['Kurlar', 'Birikim', 'Hedefler', 'Diğer']) {
       final nav = find.byType(BottomNavigationBar);

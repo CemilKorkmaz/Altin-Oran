@@ -134,20 +134,22 @@ class GoldPriceNotifier extends StateNotifier<GoldPriceState> {
   }
 
   final Ref _ref;
+  int _requestId = 0;
 
   Future<void> refresh() async {
+    final requestId = ++_requestId;
     final region = _ref.read(selectedRegionProvider);
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final newPrice = await _fetchFromApi(region);
-      if (!mounted || _ref.read(selectedRegionProvider) != region) return;
+      if (!mounted || requestId != _requestId || _ref.read(selectedRegionProvider) != region) return;
       state = GoldPriceState(
         isLoading: false,
         price: newPrice,
         previousPrice: state.price?.region == region ? state.price : newPrice,
       );
     } catch (e, st) {
-      if (!mounted || _ref.read(selectedRegionProvider) != region) return;
+      if (!mounted || requestId != _requestId || _ref.read(selectedRegionProvider) != region) return;
       if (kDebugMode) {
         debugPrint('Altın: tüm kaynaklar başarısız — $e');
         debugPrint(st.toString());
@@ -163,6 +165,8 @@ class GoldPriceNotifier extends StateNotifier<GoldPriceState> {
     if (market == null || _ref.read(selectedRegionProvider) != PriceRegion.turkey) return;
     final value = market.quotes['gold_gram']?.price;
     if (value == null) return;
+    if (state.price?.source == 'Gramhane' && state.price!.lastUpdated.isAfter(market.updatedAt)) return;
+    _requestId++;
     final previous = state.price?.region == PriceRegion.turkey ? state.price : null;
     state = GoldPriceState(isLoading: false, previousPrice: previous,
       price: GoldPrice(region: PriceRegion.turkey, pricePerGram: value,

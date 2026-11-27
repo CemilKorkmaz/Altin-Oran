@@ -25,11 +25,12 @@ class HomeShellPage extends ConsumerStatefulWidget {
   ConsumerState<HomeShellPage> createState() => _HomeShellPageState();
 }
 
-class _HomeShellPageState extends ConsumerState<HomeShellPage> {
+class _HomeShellPageState extends ConsumerState<HomeShellPage> with WidgetsBindingObserver {
   int _index = 0;
   final Set<int> _visited = {0};
   bool _launchChecked = false;
   Timer? _marketTimer;
+  bool _foreground = true;
 
   final _pages = const [
     DashboardPage(),
@@ -42,8 +43,9 @@ class _HomeShellPageState extends ConsumerState<HomeShellPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _marketTimer = Timer.periodic(const Duration(minutes: 1), (_) {
-      if (mounted) ref.read(turkishMarketProvider.notifier).refresh();
+      if (mounted && _foreground) ref.read(turkishMarketProvider.notifier).refresh();
     });
     NotificationService.setOnNotificationTap((data) {
       if (mounted) {
@@ -56,8 +58,15 @@ class _HomeShellPageState extends ConsumerState<HomeShellPage> {
   @override
   void dispose() {
     _marketTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     NotificationService.setOnNotificationTap(null);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _foreground = state == AppLifecycleState.resumed;
+    if (_foreground && mounted) ref.read(turkishMarketProvider.notifier).refresh();
   }
 
   Future<void> _checkLaunchFromNotification() async {
