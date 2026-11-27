@@ -90,7 +90,7 @@ class PortfolioPage extends ConsumerWidget {
           ],
         ),
         body: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.fromLTRB(16, 16, 16, transactions.isEmpty ? 16 : 76),
           child: transactions.isEmpty
               ? _EmptyPortfolioView(
                   onAdd: () {

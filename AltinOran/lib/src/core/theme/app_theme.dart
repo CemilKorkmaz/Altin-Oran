@@ -32,8 +32,8 @@ ThemeData _buildTheme(Brightness brightness) {
     colorScheme: scheme, scaffoldBackgroundColor: background, textTheme: textTheme,
     cupertinoOverrideTheme: CupertinoThemeData(brightness: brightness, primaryColor: primary),
     pageTransitionsTheme: const PageTransitionsTheme(builders: {
-      TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-      TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.android: _SoftPageTransitionsBuilder(),
+      TargetPlatform.iOS: _SoftPageTransitionsBuilder(),
     }),
     appBarTheme: AppBarTheme(
       backgroundColor: background, foregroundColor: text, surfaceTintColor: Colors.transparent,
@@ -92,4 +92,15 @@ ThemeData _buildTheme(Brightness brightness) {
     listTileTheme: ListTileThemeData(textColor: text, iconColor: primary, contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4)),
     snackBarTheme: SnackBarThemeData(backgroundColor: const Color(0xFF292B30), contentTextStyle: const TextStyle(color: Colors.white), behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
   );
+}
+
+/// Avoid the Android Cupertino parallax/black flash and respect reduced motion.
+class _SoftPageTransitionsBuilder extends PageTransitionsBuilder {
+  const _SoftPageTransitionsBuilder();
+  @override
+  Widget buildTransitions<T>(PageRoute<T> route, BuildContext context,
+      Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+    if (MediaQuery.disableAnimationsOf(context)) return child;
+    return FadeTransition(opacity: animation.drive(CurveTween(curve: Curves.easeOut)), child: child);
+  }
 }

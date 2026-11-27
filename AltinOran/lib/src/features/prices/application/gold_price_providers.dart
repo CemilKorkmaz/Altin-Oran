@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,11 +13,43 @@ import 'bigpara_gold_api_client.dart';
 import 'canlidoviz_client.dart';
 import 'kapalicarsi_client.dart';
 import 'metal_price_parser.dart';
+import 'turkish_market_client.dart';
 
 const _troyOunceToGram = 31.1034768;
 
 final httpClientProvider = Provider<http.Client>((ref) {
   return http.Client();
+});
+
+/// One shared request and cache for all screens. Never replaces good data with an error.
+class TurkishMarketNotifier extends StateNotifier<TurkishMarketSnapshot?> {
+  TurkishMarketNotifier(this._client) : super(null) {
+    refresh();
+    _timer = Timer.periodic(const Duration(minutes: 1), (_) => refresh());
+  }
+  final TurkishMarketClient _client;
+  late final Timer _timer;
+  Future<TurkishMarketSnapshot?>? _inFlight;
+
+  Future<TurkishMarketSnapshot?> refresh() {
+    if (_inFlight != null) return _inFlight!;
+    final pending = _load();
+    _inFlight = pending;
+    return pending.whenComplete(() { _inFlight = null; });
+  }
+
+  Future<TurkishMarketSnapshot?> _load() async {
+    final result = await _client.fetch();
+    if (mounted && result != null) state = result;
+    return result;
+  }
+
+  @override
+  void dispose() { _timer.cancel(); super.dispose(); }
+}
+
+final turkishMarketProvider = StateNotifierProvider<TurkishMarketNotifier, TurkishMarketSnapshot?>((ref) {
+  return TurkishMarketNotifier(TurkishMarketClient(ref.read(httpClientProvider)));
 });
 
 final kapalicarsiClientProvider = Provider<KapalicarsiClient>((ref) {
@@ -131,6 +164,16 @@ class GoldPriceNotifier extends StateNotifier<GoldPriceState> {
     }
   }
 
+  void useMarketSnapshot(TurkishMarketSnapshot? market) {
+    if (market == null || _ref.read(selectedRegionProvider) != PriceRegion.turkey) return;
+    final value = market.quotes['gold_gram']?.price;
+    if (value == null) return;
+    final previous = state.price?.region == PriceRegion.turkey ? state.price : null;
+    state = GoldPriceState(isLoading: false, previousPrice: previous,
+      price: GoldPrice(region: PriceRegion.turkey, pricePerGram: value,
+        pricePerOunce: value * _troyOunceToGram, lastUpdated: market.updatedAt, source: 'Gramhane'));
+  }
+
   /// Test ve geliştirme sırasında gram altın fiyatını manuel ayarlamak için.
   /// Örn: yenile tuşuna 3 kez basıldığında ₺2502 yapmak gibi.
   void setDebugPricePerGram(double gramPrice) {
@@ -157,6 +200,13 @@ class GoldPriceNotifier extends StateNotifier<GoldPriceState> {
   Future<GoldPrice> _fetchFromApi(PriceRegion region) async {
     // 1) Türkiye: Önce Bigpara gold-api (HTML parse backend), sonra CanliDoviz, Kapalıçarşı, MetalPriceAPI+Frankfurter
     if (region == PriceRegion.turkey) {
+      final market = await _ref.read(turkishMarketProvider.notifier).refresh();
+      final quote = market?.quotes['gold_gram'];
+      if (market != null && quote?.price != null) {
+        final price = quote!.price!;
+        return GoldPrice(region: region, pricePerGram: price, pricePerOunce: price * _troyOunceToGram,
+          lastUpdated: market.updatedAt, source: 'Gramhane');
+      }
       final bigpara = _ref.read(bigparaGoldApiClientProvider);
       final gramTryBigpara = await bigpara.fetchGramAltinTry();
       if (kDebugMode && (gramTryBigpara == null || gramTryBigpara <= 0)) {
@@ -339,6 +389,8 @@ class GoldPriceNotifier extends StateNotifier<GoldPriceState> {
 
 final goldPriceProvider =
     StateNotifierProvider<GoldPriceNotifier, GoldPriceState>((ref) {
-  return GoldPriceNotifier(ref);
+  final notifier = GoldPriceNotifier(ref);
+  ref.listen<TurkishMarketSnapshot?>(turkishMarketProvider, (_, next) => notifier.useMarketSnapshot(next));
+  return notifier;
 });
 

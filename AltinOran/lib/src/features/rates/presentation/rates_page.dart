@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/widgets/empty_state_view.dart';
 import '../../transactions/domain/investment_transaction.dart';
 import '../../prices/application/gold_price_providers.dart';
+import '../../prices/application/turkish_market_client.dart';
 import '../../prices/application/usd_try_rate_providers.dart';
 import '../../prices/application/eur_try_rate_providers.dart';
 import '../application/rates_prices_cache.dart';
@@ -438,9 +439,10 @@ final ratesListProvider = Provider<List<RateItem>>((ref) {
   final cache = ref.watch(ratesPricesCacheProvider);
   final bigparaByKey = ref.watch(bigparaByKeyProvider);
   final goldState = ref.watch(goldPriceProvider);
+  final market = ref.watch(turkishMarketProvider);
 
   return [
-    for (final item in baseList) _mergeItemWithApi(item, usdRate, eurRate, cache, bigparaByKey, goldState),
+    for (final item in baseList) _mergeItemWithApi(item, usdRate, eurRate, cache, bigparaByKey, goldState, market),
   ];
 });
 
@@ -451,7 +453,16 @@ RateItem _mergeItemWithApi(
   Map<String, CachedRateData> cache,
   Map<String, Map<String, dynamic>>? bigparaByKey,
   GoldPriceState goldState,
+  TurkishMarketSnapshot? market,
 ) {
+  final quote = market?.quotes[item.id];
+  if (quote?.price != null) {
+    return RateItem(id: item.id, name: item.name, code: item.code, type: item.type,
+      lastPrice: quote!.price, buyPrice: quote.buy, sellPrice: quote.sell,
+      changePercent: quote.changePercent, lastUpdated: market!.updatedAt,
+      subtitle: market.isDelayed ? 'Gramhane · gecikmeli' : 'Gramhane',
+      assetType: item.assetType, goldPurity: item.goldPurity);
+  }
   // Bigpara'dan gelen tüm altın/gümüş/platin türleri
   final bpKey = _bigparaKeyForItemId(item.id);
   if (bpKey != null) {
@@ -674,20 +685,24 @@ final ratesProvider =
   return RatesNotifier();
 });
 
-class RatesPage extends ConsumerWidget {
+class RatesPage extends ConsumerStatefulWidget {
   const RatesPage({super.key});
-
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RatesPage> createState() => _RatesPageState();
+}
+
+class _RatesPageState extends ConsumerState<RatesPage> {
+  DateTime? _lastRefresh;
+  @override
+  Widget build(BuildContext context) {
     // Kurlar sekmesi açıldığında yenile: ilk açılış veya son yenilemeden 60 sn geçtiyse.
     // Throttle hemen başta uygulanır (yenileme bitmeden tekrar tetiklenmesin).
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final lastAt = ref.read(lastRatesRefreshAtProvider);
+      if (!mounted) return;
       final now = DateTime.now();
-      final shouldRefresh = lastAt == null ||
-          now.difference(lastAt).inSeconds > 60;
+      final shouldRefresh = _lastRefresh == null || now.difference(_lastRefresh!).inSeconds > 60;
       if (shouldRefresh) {
-        ref.read(lastRatesRefreshAtProvider.notifier).state = now;
+        _lastRefresh = now;
         ref.read(usdTryRateProvider.notifier).refresh();
         ref.read(eurTryRateProvider.notifier).refresh();
         ref.read(bigparaByKeyProvider.notifier).refresh();
@@ -835,7 +850,7 @@ class RatesPage extends ConsumerWidget {
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () async {
-                    ref.read(lastRatesRefreshAtProvider.notifier).state = DateTime.now();
+                    _lastRefresh = DateTime.now();
                     try {
                       await Future.wait([
                         ref.read(usdTryRateProvider.notifier).refresh(),

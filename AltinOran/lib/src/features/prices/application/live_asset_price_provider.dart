@@ -45,7 +45,7 @@ class LiveNonGoldPriceNotifier extends StateNotifier<LiveNonGoldPriceState> {
     }
     final service = _ref.read(assetPriceServiceProvider);
     final result = await service.fetchPrice(asset, useTry: useTry);
-    if (state.assetId == assetId) {
+    if (mounted && state.assetId == assetId && state.useTry == useTry) {
       state = LiveNonGoldPriceState(
         assetId: assetId,
         useTry: useTry,

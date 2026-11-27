@@ -22,12 +22,14 @@ class GoldPrice {
     required this.pricePerGram,
     required this.pricePerOunce,
     required this.lastUpdated,
+    this.source,
   });
 
   final PriceRegion region;
   final double pricePerGram;
   final double pricePerOunce;
   final DateTime lastUpdated;
+  final String? source;
 }
 
 @immutable

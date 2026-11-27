@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,6 +24,7 @@ class HomeShellPage extends ConsumerStatefulWidget {
 
 class _HomeShellPageState extends ConsumerState<HomeShellPage> {
   int _index = 0;
+  final Set<int> _visited = {0};
   bool _launchChecked = false;
 
   final _pages = const [
@@ -89,8 +88,11 @@ class _HomeShellPageState extends ConsumerState<HomeShellPage> {
             child: Stack(
               children: [
                 Positioned.fill(
-                  bottom: showFab ? 70 : 0,
-                  child: _pages[_index],
+                  child: IndexedStack(
+                    index: _index,
+                    children: [for (var i = 0; i < _pages.length; i++)
+                      _visited.contains(i) ? _pages[i] : const SizedBox.shrink()],
+                  ),
                 ),
                 if (showFab)
                   Positioned(
@@ -116,16 +118,14 @@ class _HomeShellPageState extends ConsumerState<HomeShellPage> {
           ),
           Container(
             decoration: BoxDecoration(
-              color: theme.colorScheme.surface.withValues(alpha: .94),
+              color: theme.colorScheme.surface,
               border: Border(top: BorderSide(color: theme.dividerColor)),
             ),
-            child: ClipRect(child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-              child: SafeArea(
+            child: SafeArea(
               top: false,
               child: BottomNavigationBar(
                 currentIndex: _index,
-                onTap: (i) => setState(() => _index = i),
+                onTap: (i) => setState(() { _visited.add(i); _index = i; }),
                 type: BottomNavigationBarType.fixed,
                 elevation: 0,
                 iconSize: 22,
@@ -139,7 +139,7 @@ class _HomeShellPageState extends ConsumerState<HomeShellPage> {
                   BottomNavigationBarItem(icon: Icon(CupertinoIcons.ellipsis_circle), activeIcon: Icon(CupertinoIcons.ellipsis_circle_fill), label: 'Diğer'),
                 ],
               ),
-            ))),
+            ),
           ),
         ],
       ),

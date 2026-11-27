@@ -2,6 +2,7 @@ import json, urllib.request, urllib.parse, re
 from pathlib import Path
 key = re.search(r"defaultValue:\s*'([^']+)'", Path('lib/src/features/prices/application/api_config.dart').read_text()).group(1)
 tests = {
+    'Gramhane gram altın': ('https://api.gramhane.com/v1/prices.json', lambda d: d.get('meta', {}).get('status') == 'success' and float(d.get('kurlar', {}).get('ALTIN', {}).get('satis', 0)) > 0 and bool(d.get('meta', {}).get('tarih'))),
     'Frankfurter USD/TRY': ('https://api.frankfurter.app/latest?from=USD&to=TRY', lambda d: isinstance(d.get('rates', {}).get('TRY'), (int, float))),
     'Binance BTC/USDT': ('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT', lambda d: float(d.get('price', 0)) > 0),
     'Binance US BTC/USDT': ('https://api.binance.us/api/v3/ticker/price?symbol=BTCUSDT', lambda d: float(d.get('price', 0)) > 0),

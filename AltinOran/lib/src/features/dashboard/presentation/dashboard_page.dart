@@ -38,6 +38,7 @@ class DashboardPage extends ConsumerWidget {
 
     // Ana sayfa açıldığında Bigpara verisini bir kez tetikle (Kurlar ile aynı throttle).
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted) return;
       final lastAt = ref.read(lastRatesRefreshAtProvider);
       final now = DateTime.now();
       if (lastAt == null || now.difference(lastAt).inSeconds > 60) {
@@ -49,6 +50,7 @@ class DashboardPage extends ConsumerWidget {
     // Fiyat alarmlarını burada da dinle ki kullanıcı hangi sayfada olursa olsun
     // üstten gelen bildirim banner'ını görebilsin.
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted) return;
       final settings = ref.read(appSettingsProvider);
       if (!settings.alarmBannerEnabled) return;
       alarmsNotifier.checkAndTrigger(allRates, (alarm, rate) {
@@ -86,7 +88,7 @@ class DashboardPage extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
             child: ListView(
-              padding: const EdgeInsets.only(bottom: 24),
+              padding: const EdgeInsets.only(bottom: 90),
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
                 Padding(
@@ -1032,7 +1034,7 @@ class _GoldPriceCardState extends ConsumerState<GoldPriceCard> {
 
     // Gram altın ayarı (ana sayfada hangi ayar gösterilsin)
     final gramPurity = ref.watch(selectedGramGoldPurityProvider);
-    final bigparaByKey = ref.watch(bigparaByKeyProvider);
+    final market = ref.watch(turkishMarketProvider);
 
     // Altın dışı varlık seçiliyse canlı fiyatı tetikle (bir kez veya seçim/bölge değişince)
     final nonGoldState = ref.watch(liveNonGoldPriceProvider);
@@ -1047,42 +1049,34 @@ class _GoldPriceCardState extends ConsumerState<GoldPriceCard> {
       }
     }
 
-    double? _num(dynamic v) {
-      if (v == null) return null;
-      if (v is num) return v.toDouble();
-      if (v is String) return double.tryParse(v.replaceAll(',', '.'));
-      return null;
-    }
-
     // Seçili varlığa göre fiyat metni (altın = önce Bigpara, sonra gold API; diğerleri = assetPriceService)
     String priceText;
     String subtitle;
     if (selectedId == 'gold_gram') {
-      double? basePrice;
-      if (useTry && bigparaByKey != null) {
-        final gram = bigparaByKey['gram_altin'];
-        if (gram is Map<String, dynamic>) {
-          final alis = _num(gram['alis']);
-          final satis = _num(gram['satis']);
-          basePrice = satis ?? alis ?? (alis != null && satis != null ? (alis + satis) / 2 : null);
-        }
-      }
-      if (basePrice == null && state.price != null && state.price!.region == region) basePrice = state.price!.pricePerGram;
-      if (basePrice != null && basePrice > 0) {
-        final ratio = switch (gramPurity) {
-          GoldPurity.carat24 => 1.0,
-          GoldPurity.carat22 => 22 / 24,
-          GoldPurity.carat18 => 18 / 24,
-          GoldPurity.carat14 => 14 / 24,
-        };
-        final price = basePrice * ratio;
-        priceText = '${price.toStringAsFixed(2)} ${useTry ? 'TL' : 'USD'} / gr';
-        subtitle = state.price != null && basePrice == state.price!.pricePerGram
-            ? 'Son güncelleme: ${state.price!.lastUpdated.toLocal().toString().substring(0, 16)}'
-            : 'Kaynak: Bigpara';
+      final snapshotId = switch (gramPurity) {
+        GoldPurity.carat24 => 'gold_gram',
+        GoldPurity.carat22 => 'gold_bilezik22',
+        GoldPurity.carat18 => 'gold_gram_18',
+        GoldPurity.carat14 => 'gold_gram_14',
+      };
+      final marketQuote = useTry ? market?.quotes[snapshotId] : null;
+      final marketPrice = marketQuote?.price;
+      final gold = state.price?.region == region ? state.price : null;
+      final ratio = switch (gramPurity) {
+        GoldPurity.carat24 => 1.0, GoldPurity.carat22 => 22 / 24,
+        GoldPurity.carat18 => 18 / 24, GoldPurity.carat14 => 14 / 24,
+      };
+      final price = marketPrice ?? (gold == null ? null : gold.pricePerGram * ratio);
+      if (price != null && price > 0) {
+        priceText = '${formatMoney(price)} ${useTry ? 'TL' : 'USD'} / gr';
+        final updated = marketPrice != null ? market!.updatedAt : gold!.lastUpdated;
+        final source = marketPrice != null ? 'Gramhane' : (gold!.source ?? 'Referans fiyat');
+        final delayed = DateTime.now().toUtc().difference(updated.toUtc()) > const Duration(minutes: 20);
+        final estimated = marketPrice == null && gramPurity != GoldPurity.carat24;
+        subtitle = '$source${delayed ? ' · gecikmeli' : ''}${estimated ? ' · tahmini' : ''} · ${updated.toLocal().toString().substring(0, 16)}';
       } else {
-        priceText = 'Henüz veri yok';
-        subtitle = 'Fiyat alınamadı. Yenileyerek tekrar deneyin.';
+        priceText = state.isLoading ? 'Yükleniyor...' : 'Henüz veri yok';
+        subtitle = state.isLoading ? 'Fiyat alınıyor' : 'Fiyat alınamadı. Yenileyerek tekrar deneyin.';
       }
     } else if (asset != null) {
       final res = selectedId == nonGoldState.assetId ? nonGoldState.result : null;
