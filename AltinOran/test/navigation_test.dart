@@ -9,6 +9,9 @@ import 'package:birikim_portfoy/src/features/prices/application/gold_price_provi
 
 void main() {
   testWidgets('small phone can open every main tab without overflow', (tester) async {
+    final originalOnError = FlutterError.onError;
+    FlutterError.onError = (details) { FlutterError.dumpErrorToConsole(details, forceReport: true); originalOnError?.call(details); };
+    addTearDown(() => FlutterError.onError = originalOnError);
     tester.view.physicalSize = const Size(320, 700);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);

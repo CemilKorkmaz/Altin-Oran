@@ -4,6 +4,9 @@ key = re.search(r"defaultValue:\s*'([^']+)'", Path('lib/src/features/prices/appl
 tests = {
     'Frankfurter USD/TRY': ('https://api.frankfurter.app/latest?from=USD&to=TRY', lambda d: isinstance(d.get('rates', {}).get('TRY'), (int, float))),
     'Binance BTC/USDT': ('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT', lambda d: float(d.get('price', 0)) > 0),
+    'Binance US BTC/USDT': ('https://api.binance.us/api/v3/ticker/price?symbol=BTCUSDT', lambda d: float(d.get('price', 0)) > 0),
+    'CoinGecko BTC': ('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', lambda d: float(d.get('bitcoin', {}).get('usd', 0)) > 0),
+    'Kapalıçarşı': ('https://kapali-carsi-altin-api.vercel.app/api/prices', lambda d: isinstance(d, dict) and bool(d)),
     'Canlidoviz': ('https://api.canlidoviz.com/web/items?marketId=1&type=1', lambda d: isinstance(d, (dict, list))),
     'MetalPriceAPI': ('https://api.metalpriceapi.com/v1/latest?' + urllib.parse.urlencode({'api_key':key,'base':'USD','currencies':'XAU,XAG,XPT,XPD'}), lambda d: d.get('success') is True and isinstance(d.get('rates'), dict)),
 }
