@@ -11,6 +11,6 @@ for name,(url, valid) in tests.items():
     try:
         with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent':'AltinOran-API-check/1.0'}),timeout=12) as res:
             data=json.load(res)
-            print(f'{name}:', 'OK' if valid(data) else 'geçersiz/başarısız yanıt')
+            print(f'::notice::{name}: ' + ('OK' if valid(data) else 'geçersiz/başarısız yanıt'))
     except Exception as exc:
-        print(f'{name}: erişilemedi ({type(exc).__name__}{" " + str(exc.code) if hasattr(exc,"code") else ""})')
+        print(f'::notice::{name}: erişilemedi ({type(exc).__name__}{" " + str(exc.code) if hasattr(exc,"code") else ""})')

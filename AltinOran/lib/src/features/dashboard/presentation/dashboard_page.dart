@@ -1116,7 +1116,7 @@ class _GoldPriceCardState extends ConsumerState<GoldPriceCard>
           basePrice = satis ?? alis ?? (alis != null && satis != null ? (alis + satis) / 2 : null);
         }
       }
-      if (basePrice == null && state.price != null) basePrice = state.price!.pricePerGram;
+      if (basePrice == null && state.price != null && state.price!.region == region) basePrice = state.price!.pricePerGram;
       if (basePrice != null && basePrice > 0) {
         final ratio = switch (gramPurity) {
           GoldPurity.carat24 => 1.0,

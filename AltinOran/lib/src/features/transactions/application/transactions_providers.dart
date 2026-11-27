@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../prices/application/gold_price_providers.dart';
+import '../../prices/domain/gold_price.dart';
 import '../../prices/application/usd_try_rate_providers.dart';
 import '../../prices/application/eur_try_rate_providers.dart';
 import '../domain/investment_transaction.dart';
@@ -75,8 +76,11 @@ final portfolioSummaryProvider = Provider<PortfolioSummary>((ref) {
   final transactions = ref.watch(transactionsProvider);
   final goldState = ref.watch(goldPriceProvider);
 
-  final currentGramPrice = goldState.price?.pricePerGram;
   final usdRate = ref.watch(usdTryRateProvider).rate;
+  final gold = goldState.price;
+  final currentGramPrice = gold == null ? null :
+      gold.region == PriceRegion.turkey ? gold.pricePerGram :
+      usdRate == null ? null : gold.pricePerGram * usdRate;
   final eurRate = ref.watch(eurTryRateProvider).rate;
   final currentFxPricePerUnit = <AssetType, double>{};
   if (usdRate != null) currentFxPricePerUnit[AssetType.usd] = usdRate;

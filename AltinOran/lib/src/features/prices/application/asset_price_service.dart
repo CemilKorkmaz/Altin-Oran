@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/supported_asset.dart';
+import '../domain/gold_price.dart';
 import 'api_config.dart';
 import 'eur_try_rate_providers.dart';
 import 'gold_price_providers.dart';
@@ -173,14 +174,15 @@ class AssetPriceService {
     final state = _ref.read(goldPriceProvider);
     final p = state.price?.pricePerGram;
     if (p != null) {
-      if (!useTry) {
-        final rate = _usdTryRate;
-        if (rate == null) {
-          return AssetPriceResult(price: null, unitLabel: 'gr', lastUpdated: DateTime.now(), error: 'USD/TRY kur alınamadı');
-        }
-        return AssetPriceResult(price: p / rate, unitLabel: 'gr', lastUpdated: state.price!.lastUpdated, error: state.errorMessage);
+      final isTry = state.price!.region == PriceRegion.turkey;
+      if (isTry == useTry) {
+        return AssetPriceResult(price: p, unitLabel: 'gr', lastUpdated: state.price!.lastUpdated, error: state.errorMessage);
       }
-      return AssetPriceResult(price: p, unitLabel: 'gr', lastUpdated: state.price!.lastUpdated, error: state.errorMessage);
+      final rate = _usdTryRate;
+      if (rate == null || rate <= 0) {
+        return AssetPriceResult(price: null, unitLabel: 'gr', lastUpdated: DateTime.now(), error: 'USD/TRY kur alınamadı');
+      }
+      return AssetPriceResult(price: isTry ? p / rate : p * rate, unitLabel: 'gr', lastUpdated: state.price!.lastUpdated, error: state.errorMessage);
     }
     return AssetPriceResult(
       price: null,

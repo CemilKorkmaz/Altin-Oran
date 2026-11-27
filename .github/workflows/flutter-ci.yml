@@ -27,7 +27,17 @@ jobs:
           flutter-version: '3.41.2'
           channel: stable
       - run: flutter pub get
-      - run: flutter test
+      - name: Flutter tests
+        shell: bash
+        run: |
+          set +e
+          flutter test --reporter expanded > test-output.txt 2>&1
+          code=$?
+          cat test-output.txt
+          if [ "$code" -ne 0 ]; then
+            python3 -c 'from pathlib import Path; s=Path("test-output.txt").read_text()[-12000:]; print("::error::" + s.replace("%", "%25").replace("\n", "%0A").replace("\r", "%0D"))'
+          fi
+          exit "$code"
       - name: Check live API availability
         run: python3 tool/check_live_apis.py
       - run: flutter build apk --release
