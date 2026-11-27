@@ -100,7 +100,7 @@ class DashboardPage extends ConsumerWidget {
                   ),
                   amountLabel: summary.totalCurrentValue > 0 ? 'Tahmini değer (eksik fiyatlar olabilir)' : 'Toplam maliyet',
                   profitLoss: summary.totalProfitLoss,
-                  profitText: formatDisplayCurrency(
+                  profitText: summary.totalCurrentValue == 0 && summary.totalCost > 0 ? '—' : formatDisplayCurrency(
                     summary.totalProfitLoss.abs(), displayCurrency, usdRateState.rate, eurRateState.rate,
                   ),
                   todayText: 'Bugün: —',
@@ -172,7 +172,7 @@ class _PortfolioHero extends StatelessWidget {
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('Tahmini kâr / zarar', style: theme.textTheme.bodySmall),
                 const SizedBox(height: 4),
-                Text('${profitLoss < 0 ? '−' : profitLoss > 0 ? '+' : ''}$profitText', style: theme.textTheme.titleMedium?.copyWith(color: profitColor, fontWeight: FontWeight.w700)),
+                Text('${profitText == '—' ? '' : profitLoss < 0 ? '−' : profitLoss > 0 ? '+' : ''}$profitText', style: theme.textTheme.titleMedium?.copyWith(color: profitColor, fontWeight: FontWeight.w700)),
               ])),
               Icon(Icons.chevron_right_rounded, color: theme.colorScheme.primary),
             ]),

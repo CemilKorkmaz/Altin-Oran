@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 
 import '../domain/supported_asset.dart';
 import '../domain/gold_price.dart';
@@ -89,20 +90,26 @@ class AssetPriceService {
     );
   }
 
+  Future<http.Response?> _fetchBinance(String path, String symbol) async {
+    final client = _ref.read(httpClientProvider);
+    for (final host in ['api.binance.com', 'api.binance.us']) {
+      try {
+        final response = await client.get(Uri.https(host, path, {'symbol': symbol}))
+            .timeout(const Duration(seconds: 10));
+        if (response.statusCode == 200) return response;
+      } catch (_) {
+        // Try the next exchange endpoint.
+      }
+    }
+    return null;
+  }
+
   /// Binance public API: anlık fiyat (USDT).
   Future<AssetPriceResult> _fetchCryptoPrice(SupportedAsset asset, {required bool useTry}) async {
     final symbol = asset.symbol ?? '';
-    final uri = Uri.https(
-      'api.binance.com',
-      '/api/v3/ticker/price',
-      {'symbol': symbol},
-    );
     try {
-      final client = _ref.read(httpClientProvider);
-      final response = await client.get(uri).timeout(const Duration(seconds: 10));
-      if (response.statusCode != 200) {
-        return _cryptoError(asset);
-      }
+      final response = await _fetchBinance('/api/v3/ticker/price', symbol);
+      if (response == null) return _cryptoError(asset);
       final body = jsonDecode(response.body) as Map<String, dynamic>;
       final priceStr = body['price'] as String?;
       final usdPrice = double.tryParse(priceStr ?? '');
@@ -137,13 +144,9 @@ class AssetPriceService {
     required bool useTry,
   }) async {
     final symbol = asset.symbol ?? '';
-    final uri = Uri.https('api.binance.com', '/api/v3/ticker/24hr', {'symbol': symbol});
     try {
-      final client = _ref.read(httpClientProvider);
-      final response = await client.get(uri).timeout(const Duration(seconds: 10));
-      if (response.statusCode != 200) {
-        return (price: null, low: null, high: null, changePercent: null);
-      }
+      final response = await _fetchBinance('/api/v3/ticker/24hr', symbol);
+      if (response == null) return (price: null, low: null, high: null, changePercent: null);
       final body = jsonDecode(response.body) as Map<String, dynamic>;
       final lastStr = body['lastPrice'] as String?;
       final lowStr = body['lowPrice'] as String?;
