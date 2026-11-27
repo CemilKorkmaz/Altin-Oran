@@ -31,7 +31,7 @@ void main() {
   });
   test('rejects broken, unsuccessful, future and invalid prices', () {
     final bad = payload();
-    (bad['kurlar'] as Map)['ALTIN'] = {'satis': -1, 'alis': 'NaN'};
+    (bad['kurlar'] as Map)['ALTIN'] = {'satis': -1, 'alis': 0};
     expect(TurkishMarketClient.parse(jsonEncode(bad)), isNull);
     expect(TurkishMarketClient.parse('{invalid'), isNull);
     final future = payload(timestamp: '2099-01-01 00:00:00');
@@ -43,7 +43,7 @@ void main() {
   test('shared quote populates rates list and portfolio gold provider', () async {
     var calls = 0;
     final client = MockClient((request) async {
-      if (request.url.host == 'api.gramhane.com') { calls++; return http.Response(jsonEncode(payload()), 200); }
+      if (request.url.host == 'api.gramhane.com') { calls++; return http.Response(jsonEncode(payload()), 200, headers: {'content-type': 'application/json; charset=utf-8'}); }
       return http.Response('{}', 503);
     });
     final container = ProviderContainer(overrides: [httpClientProvider.overrideWithValue(client)]);

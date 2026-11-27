@@ -24,6 +24,18 @@ void main() {
       child: const BirikimPortfoyApp(),
     ));
     await tester.pump(const Duration(milliseconds: 200));
+    final bar = find.byType(BottomNavigationBar);
+    await tester.tap(find.descendant(of: bar, matching: find.text('Kurlar')));
+    await tester.pump();
+    await tester.tap(find.text('Kripto').first);
+    await tester.pump();
+    expect(find.text('Bitcoin'), findsWidgets);
+    await tester.tap(find.descendant(of: bar, matching: find.text('Hedefler')));
+    await tester.pump();
+    await tester.tap(find.descendant(of: bar, matching: find.text('Kurlar')));
+    await tester.pump();
+    expect(find.text('Bitcoin'), findsWidgets, reason: 'Sekme filtresi korunmalı');
+    expect(tester.takeException(), isNull);
     for (final label in ['Kurlar', 'Birikim', 'Hedefler', 'Diğer']) {
       final nav = find.byType(BottomNavigationBar);
       await tester.tap(find.descendant(of: nav, matching: find.text(label)));

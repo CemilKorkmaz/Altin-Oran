@@ -28,7 +28,7 @@ class TurkishMarketClient {
         'Accept': 'application/json', 'User-Agent': 'AltinOran/0.4',
       }).timeout(const Duration(seconds: 8));
       if (response.statusCode != 200) return null;
-      return parse(response.body);
+      return parse(utf8.decode(response.bodyBytes));
     } catch (_) {
       return null;
     }
