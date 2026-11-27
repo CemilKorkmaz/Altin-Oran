@@ -1,0 +1,19 @@
+{
+  "name": "altinoran-gold-api",
+  "version": "1.0.0",
+  "description": "Bigpara Kapalı Çarşı altın fiyatlarını 2 dk'da bir çekip JSON API olarak sunar",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "puppeteer": "^23.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
