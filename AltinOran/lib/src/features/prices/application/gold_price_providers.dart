@@ -67,7 +67,7 @@ class BigparaByKeyNotifier extends StateNotifier<Map<String, Map<String, dynamic
   Future<void> refresh() async {
     final client = _ref.read(bigparaGoldApiClientProvider);
     final byKey = await client.fetchAllByKey();
-    state = byKey;
+    if (mounted) state = byKey;
   }
 }
 

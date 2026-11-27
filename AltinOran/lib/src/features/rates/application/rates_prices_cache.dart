@@ -43,6 +43,7 @@ class RatesPricesCacheNotifier extends StateNotifier<Map<String, CachedRateData>
       if (_ref.read(usdTryRateProvider).rate == null) {
         await _ref.read(usdTryRateProvider.notifier).refresh();
       }
+      if (!mounted) return;
       final assets = _ref.read(allSupportedAssetsProvider).where((asset) =>
           asset.category == AssetCategory.crypto ||
           asset.category == AssetCategory.silver ||

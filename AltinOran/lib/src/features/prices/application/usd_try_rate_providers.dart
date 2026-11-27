@@ -42,12 +42,14 @@ class UsdTryRateNotifier extends StateNotifier<UsdTryRateState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final rate = await _fetchFromApi();
+      if (!mounted) return;
       state = UsdTryRateState(
         isLoading: false,
         rate: rate,
         errorMessage: null,
       );
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Döviz kuru alınamadı',

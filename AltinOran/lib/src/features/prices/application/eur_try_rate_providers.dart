@@ -41,12 +41,14 @@ class EurTryRateNotifier extends StateNotifier<EurTryRateState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final rate = await _fetchFromApi();
+      if (!mounted) return;
       state = EurTryRateState(
         isLoading: false,
         rate: rate,
         errorMessage: null,
       );
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'EUR kuru alınamadı',
