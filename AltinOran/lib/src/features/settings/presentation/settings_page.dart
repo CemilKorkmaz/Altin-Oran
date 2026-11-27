@@ -24,6 +24,7 @@ class SettingsPage extends ConsumerWidget {
       bottom: false,
       child: Scaffold(
         appBar: AppBar(
+          leading: Navigator.of(context).canPop() ? const BackButton() : null,
           title: const Text('Ayarlar'),
         ),
         body: ListView(

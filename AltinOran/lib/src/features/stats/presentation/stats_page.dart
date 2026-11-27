@@ -203,6 +203,7 @@ class StatsPage extends ConsumerWidget {
       bottom: false,
       child: Scaffold(
         appBar: AppBar(
+          leading: Navigator.of(context).canPop() ? const BackButton() : null,
           title: const Text('İstatistikler'),
         ),
         body: transactions.isEmpty

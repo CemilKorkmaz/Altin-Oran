@@ -112,12 +112,14 @@ class GoldPriceNotifier extends StateNotifier<GoldPriceState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final newPrice = await _fetchFromApi(region);
+      if (!mounted || _ref.read(selectedRegionProvider) != region) return;
       state = GoldPriceState(
         isLoading: false,
         price: newPrice,
-        previousPrice: state.price ?? newPrice,
+        previousPrice: state.price?.region == region ? state.price : newPrice,
       );
     } catch (e, st) {
+      if (!mounted || _ref.read(selectedRegionProvider) != region) return;
       if (kDebugMode) {
         debugPrint('Altın: tüm kaynaklar başarısız — $e');
         debugPrint(st.toString());

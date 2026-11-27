@@ -271,9 +271,11 @@ class PortfolioDistributionCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transactions = ref.watch(transactionsProvider);
     final goldState = ref.watch(goldPriceProvider);
-    final currentGramPrice = goldState.price?.pricePerGram;
     final displayCurrency = ref.watch(appSettingsProvider).displayCurrency;
     final usdRate = ref.watch(usdTryRateProvider).rate;
+    final gold = goldState.price;
+    final currentGramPrice = gold == null ? null : gold.region == PriceRegion.turkey
+        ? gold.pricePerGram : usdRate == null ? null : gold.pricePerGram * usdRate;
     final eurRate = ref.watch(eurTryRateProvider).rate;
 
     if (transactions.isEmpty) {

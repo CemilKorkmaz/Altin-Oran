@@ -80,11 +80,11 @@ class AssetPriceService {
         lastUpdated: DateTime.now(),
       );
     }
-    if (useTry && eurRate == null) {
+    if (eurRate == null || (!useTry && (usdRate == null || usdRate <= 0))) {
       return AssetPriceResult(price: null, unitLabel: unit, lastUpdated: DateTime.now(), error: 'Kur alınamadı');
     }
     return AssetPriceResult(
-      price: useTry ? eurRate : 1.0,
+      price: useTry ? eurRate : eurRate / usdRate!,
       unitLabel: unit,
       lastUpdated: DateTime.now(),
     );

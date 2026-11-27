@@ -15,6 +15,7 @@ import '../../goals/presentation/goals_page.dart';
 import '../../settings/presentation/settings_page.dart';
 import '../../settings/application/settings_providers.dart';
 import '../../transactions/presentation/add_transaction_page.dart';
+import '../../transactions/application/transactions_providers.dart';
 
 class HomeShellPage extends ConsumerStatefulWidget {
   const HomeShellPage({super.key});
@@ -78,7 +79,7 @@ class _HomeShellPageState extends ConsumerState<HomeShellPage> {
       ref.read(pendingAlarmProvider.notifier).state = null;
     });
 
-    final showFab = _index == 0 || _index == 2;
+    final showFab = _index == 0 || (_index == 2 && ref.watch(transactionsProvider).isNotEmpty);
     final theme = Theme.of(context);
 
     return Scaffold(
