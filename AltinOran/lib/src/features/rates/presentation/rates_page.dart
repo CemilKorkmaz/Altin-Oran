@@ -886,7 +886,7 @@ class RatesPage extends ConsumerWidget {
                 children: [
                   Icon(Icons.circle, size: 8, color: Colors.green.shade700),
                   const SizedBox(width: 6),
-                  Text(
+                  Expanded(child: Text(
                     'Veriler kaynaklarına göre güncellenir',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context)
@@ -894,7 +894,7 @@ class RatesPage extends ConsumerWidget {
                               .onSurface
                               .withOpacity(0.65),
                         ),
-                  ),
+                  )),
                 ],
               ),
             ],
