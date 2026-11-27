@@ -6,6 +6,7 @@ import '../../../core/widgets/empty_state_view.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../prices/domain/gold_price.dart';
 import '../../prices/application/gold_price_providers.dart';
+import '../../prices/domain/gold_price.dart';
 import '../../rates/presentation/rates_page.dart';
 import '../../alerts/application/notification_service.dart';
 import '../../alerts/application/price_alarm_providers.dart';
@@ -35,6 +36,7 @@ class PortfolioPage extends ConsumerWidget {
     final eurRateState = ref.watch(eurTryRateProvider);
     final displayCurrency = ref.watch(appSettingsProvider).displayCurrency;
     final goldState = ref.watch(goldPriceProvider);
+    final gramTry = goldPricePerGramInTry(goldState.price, usdRateState.rate);
     final allRates = ref.watch(ratesListProvider);
     final alarmsNotifier = ref.watch(priceAlarmsProvider.notifier);
 
@@ -173,12 +175,12 @@ class PortfolioPage extends ConsumerWidget {
                       title: 'Mevcut Varlıklar',
                       subtitle: 'Birikimlerin listesi',
                     ),
-                    if (goldState.price?.pricePerGram != null) ...[
+                    if (gramTry != null) ...[
                       const SizedBox(height: 4),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Güncel gram altın fiyatı: ₺${formatMoney(goldState.price!.pricePerGram)} / gr',
+                          'Güncel gram altın fiyatı: ₺${formatMoney(gramTry!)} / gr',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: Theme.of(context)
                                     .colorScheme
@@ -703,7 +705,7 @@ class AssetDetailPage extends ConsumerWidget {
       }
     }
 
-    final currentGramPrice = goldState.price?.pricePerGram;
+    final currentGramPrice = goldPricePerGramInTry(goldState.price, usdRateState.rate);
     final currentValue = isGoldType && currentGramPrice != null && currentGramPrice > 0
         ? remainingGrams * currentGramPrice
         : remainingCost;
@@ -774,10 +776,10 @@ class AssetDetailPage extends ConsumerWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          if (isGoldType && goldState.price?.pricePerGram != null) ...[
+                          if (isGoldType && currentGramPrice != null) ...[
                             const SizedBox(height: 6),
                             Text(
-                              'Güncel gram altın fiyatı: ₺${formatMoney(goldState.price!.pricePerGram)} / gr',
+                              'Güncel gram altın fiyatı: ₺${formatMoney(currentGramPrice!)} / gr',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: Theme.of(context)
                                         .colorScheme

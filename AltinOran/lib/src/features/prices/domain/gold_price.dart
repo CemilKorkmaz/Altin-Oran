@@ -32,6 +32,13 @@ class GoldPrice {
   final String? source;
 }
 
+/// Convert the selected market quote to TRY before using it in a TRY portfolio.
+double? goldPricePerGramInTry(GoldPrice? price, double? usdTry) {
+  if (price == null) return null;
+  if (price.region == PriceRegion.turkey) return price.pricePerGram;
+  return usdTry != null && usdTry > 0 ? price.pricePerGram * usdTry : null;
+}
+
 @immutable
 class GoldPriceState {
   const GoldPriceState({

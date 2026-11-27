@@ -7,6 +7,8 @@ import '../../../core/widgets/section_header.dart';
 import '../../transactions/application/transactions_providers.dart';
 import '../../transactions/domain/investment_transaction.dart';
 import '../../prices/application/gold_price_providers.dart';
+import '../../prices/application/usd_try_rate_providers.dart';
+import '../../prices/domain/gold_price.dart';
 import '../../portfolio/presentation/portfolio_page.dart';
 import '../../dashboard/presentation/pnl_details_page.dart';
 import '../../dashboard/presentation/dashboard_page.dart' show PortfolioDistributionCard;
@@ -898,7 +900,7 @@ class _PerAssetPnlCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transactions = ref.watch(transactionsProvider);
     final goldState = ref.watch(goldPriceProvider);
-    final currentGramPrice = goldState.price?.pricePerGram;
+    final currentGramPrice = goldPricePerGramInTry(goldState.price, ref.watch(usdTryRateProvider).rate);
 
     // Altına çevrilebilir varlıklar için, ayar bazında kâr/zarar dağılımı.
     final sorted = [...transactions]
