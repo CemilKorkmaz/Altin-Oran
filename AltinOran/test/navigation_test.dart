@@ -32,9 +32,11 @@ void main() {
     }
     for (final page in ['İstatistikler', 'Ayarlar']) {
       await tester.tap(find.text(page).first);
+      await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       expect(tester.takeException(), isNull, reason: '$page ekranında hata');
       await tester.pageBack();
+      await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
     }
     await tester.tap(find.descendant(of: find.byType(BottomNavigationBar), matching: find.text('Ana sayfa')));

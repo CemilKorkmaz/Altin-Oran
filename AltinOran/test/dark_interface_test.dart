@@ -39,6 +39,7 @@ void main() {
       expect(tester.takeException(), isNull, reason: '$label ekranında hata');
     }
     await tester.tap(find.text('Ayarlar').first);
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'Koyu ayarlar ekranında hata');
   });
