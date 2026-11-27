@@ -7,7 +7,7 @@ Flutter kaynak projesi [`AltinOran/`](AltinOran/) içinde. Drive'daki iki sürü
 Bu proje henüz kullanıma hazır bir finans uygulaması olarak doğrulanmadı. İşlemler, hedefler ve alarmlar şu anda yalnızca bellekte tutulur; uygulama kapandığında kaybolabilir. Bu nedenle gerçek portföy verilerini kaydetmek veya yatırım kararı vermek için kullanmayın. Fiyat kaynakları ve alarmlar cihazda doğrulanmadı.
 
 - `gold-api` ayrı bir sunucudur; APK ile birlikte otomatik çalışmaz. Gerçek cihazdan erişilebilen HTTPS sunucu adresi `--dart-define=BIGPARA_GOLD_API_URL=https://...` ile verilebilir.
-- MetalPriceAPI anahtarı koddaki varsayılandan kaldırıldı. `--dart-define` ile uygulamaya gömülen anahtar gizli değildir; üretimde anahtarları güvenli bir sunucuda tutun. Anahtar olmadan bazı maden fiyatları kullanılamaz.
+- Kullanıcının isteğiyle MetalPriceAPI anahtarı tekrar uygulamaya eklendi; açık kaynak kodundan ve APK dosyasından görülebilir. Anahtarın geçerliliği ve API erişimi doğrulanmadı.
 - Android release yapılandırması şu anda debug imzası kullanır; test amaçlıdır ve kalıcı dağıtım/Play Store imzası değildir.
 - API erişimi, lisans/kullanım şartları, fiyat doğruluğu ve cihaz testleri ayrıca doğrulanmalıdır. Kur verisi ve kripto da üçüncü taraf servislere bağlıdır.
 

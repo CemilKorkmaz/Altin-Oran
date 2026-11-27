@@ -2,7 +2,7 @@
 /// Anahtarları kaynak kodda saklamayın. İstemciye derlenen anahtar gizli değildir.
 String get metalPriceApiKey => const String.fromEnvironment(
   'METALPRICEAPI_KEY',
-  defaultValue: '',
+  defaultValue: '1a4c4dae7ee9114bce0e4b2ed316f085',
 );
 
 /// Kapalıçarşı altın API base (3. taraf proje; JSON endpoint varsa kullanılır).
