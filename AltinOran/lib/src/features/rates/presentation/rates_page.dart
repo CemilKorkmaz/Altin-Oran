@@ -8,6 +8,7 @@ import '../../prices/application/usd_try_rate_providers.dart';
 import '../../prices/application/eur_try_rate_providers.dart';
 import '../application/rates_prices_cache.dart';
 import '../../prices/domain/supported_asset.dart';
+import '../../prices/domain/gold_price.dart';
 import '../../alerts/application/notification_service.dart';
 import '../../alerts/application/price_alarm_providers.dart';
 import '../../alerts/domain/price_alarm.dart';
@@ -436,9 +437,10 @@ final ratesListProvider = Provider<List<RateItem>>((ref) {
   final eurRate = ref.watch(eurTryRateProvider).rate;
   final cache = ref.watch(ratesPricesCacheProvider);
   final bigparaByKey = ref.watch(bigparaByKeyProvider);
+  final goldState = ref.watch(goldPriceProvider);
 
   return [
-    for (final item in baseList) _mergeItemWithApi(item, usdRate, eurRate, cache, bigparaByKey),
+    for (final item in baseList) _mergeItemWithApi(item, usdRate, eurRate, cache, bigparaByKey, goldState),
   ];
 });
 
@@ -448,6 +450,7 @@ RateItem _mergeItemWithApi(
   double? eurRate,
   Map<String, CachedRateData> cache,
   Map<String, Map<String, dynamic>>? bigparaByKey,
+  GoldPriceState goldState,
 ) {
   // Bigpara'dan gelen tüm altın/gümüş/platin türleri
   final bpKey = _bigparaKeyForItemId(item.id);
@@ -460,28 +463,42 @@ RateItem _mergeItemWithApi(
         final changePercent = _numFromBigpara(data['changePercent']);
         final lastPrice = satis ?? alis ?? (alis != null && satis != null ? (alis + satis) / 2 : null);
         if (lastPrice != null && lastPrice > 0) {
-          const spread = 0.01;
           return RateItem(
             id: item.id,
             name: item.name,
             code: item.code,
             type: item.type,
-            buyPrice: alis ?? lastPrice * (1 - spread / 2),
-            sellPrice: satis ?? lastPrice * (1 + spread / 2),
+            buyPrice: alis,
+            sellPrice: satis,
             lastPrice: lastPrice,
             changePercent: changePercent ?? item.changePercent,
             dailyLow: item.dailyLow,
             dailyHigh: item.dailyHigh,
-            subtitle: item.subtitle,
+            subtitle: 'Bigpara',
             assetType: item.assetType,
             goldPurity: item.goldPurity,
             closingPrice: item.closingPrice,
-            lastUpdated: DateTime.now(),
           );
         }
       }
     }
-    // Bigpara kaynaklı ama veri yok (backend kapalı veya hata)
+    final gold = goldState.price;
+    if (item.id == 'gold_gram' && gold != null && gold.region == PriceRegion.turkey) {
+      return RateItem(
+        id: item.id, name: item.name, code: item.code, type: item.type,
+        lastPrice: gold.pricePerGram, lastUpdated: gold.lastUpdated,
+        subtitle: 'Referans fiyat', assetType: item.assetType, goldPurity: item.goldPurity,
+      );
+    }
+    final cachedMetal = cache[item.id];
+    if (cachedMetal != null) {
+      return RateItem(
+        id: item.id, name: item.name, code: item.code, type: item.type,
+        lastPrice: cachedMetal.lastPrice, lastUpdated: cachedMetal.lastUpdated,
+        subtitle: 'Referans fiyat', assetType: item.assetType, goldPurity: item.goldPurity,
+      );
+    }
+    // Kaynak yoksa tahmini bir değer üretme.
     return RateItem(
       id: item.id,
       name: item.name,
@@ -493,7 +510,7 @@ RateItem _mergeItemWithApi(
       changePercent: item.changePercent,
       spread: item.spread,
       spreadPercent: item.spreadPercent,
-      subtitle: 'Veri yok. Yenile.',
+      subtitle: 'Veri yok',
       assetType: item.assetType,
       goldPurity: item.goldPurity,
       dailyLow: null,
@@ -524,22 +541,20 @@ RateItem _mergeItemWithApi(
         goldPurity: item.goldPurity,
       );
     }
-    const spread = 0.003;
     return RateItem(
       id: item.id,
       name: item.name,
       code: item.code,
       type: item.type,
-      buyPrice: usdRate * (1 - spread / 2),
-      sellPrice: usdRate * (1 + spread / 2),
+      buyPrice: null,
+      sellPrice: null,
       lastPrice: usdRate,
       changePercent: item.changePercent,
       dailyLow: item.dailyLow,
       dailyHigh: item.dailyHigh,
-      subtitle: item.subtitle,
+      subtitle: 'Frankfurter · referans kur',
       assetType: item.assetType,
       goldPurity: item.goldPurity,
-      lastUpdated: DateTime.now(),
     );
   }
   if (item.id == 'fx_eur_try') {
@@ -560,37 +575,33 @@ RateItem _mergeItemWithApi(
         goldPurity: item.goldPurity,
       );
     }
-    const spread = 0.003;
     return RateItem(
       id: item.id,
       name: item.name,
       code: item.code,
       type: item.type,
-      buyPrice: eurRate * (1 - spread / 2),
-      sellPrice: eurRate * (1 + spread / 2),
+      buyPrice: null,
+      sellPrice: null,
       lastPrice: eurRate,
       changePercent: item.changePercent,
       dailyLow: item.dailyLow,
       dailyHigh: item.dailyHigh,
-      subtitle: item.subtitle,
+      subtitle: 'Frankfurter · referans kur',
       assetType: item.assetType,
       goldPurity: item.goldPurity,
-      lastUpdated: DateTime.now(),
     );
   }
 
-  // Önbellekten (maden + kripto). Alış < Satış, madenler %1, kripto %0,2 spread.
+  // API önbelleğindeki değerler; olmayan alış/satış değerlerini uydurmayız.
   final cached = cache[item.id];
   if (cached != null) {
-    final isCrypto = item.type == RateType.coin;
-    final spread = isCrypto ? 0.002 : 0.01;
     return RateItem(
       id: item.id,
       name: item.name,
       code: item.code,
       type: item.type,
-      buyPrice: cached.buyPrice ?? cached.lastPrice * (1 - spread / 2),
-      sellPrice: cached.sellPrice ?? cached.lastPrice * (1 + spread / 2),
+      buyPrice: cached.buyPrice,
+      sellPrice: cached.sellPrice,
       lastPrice: cached.lastPrice,
       changePercent: cached.changePercent ?? item.changePercent,
       dailyLow: cached.dailyLow ?? item.dailyLow,
@@ -680,6 +691,7 @@ class RatesPage extends ConsumerWidget {
         ref.read(usdTryRateProvider.notifier).refresh();
         ref.read(eurTryRateProvider.notifier).refresh();
         ref.read(bigparaByKeyProvider.notifier).refresh();
+        ref.read(goldPriceProvider.notifier).refresh();
         ref.read(ratesPricesCacheProvider.notifier).refresh();
       }
     });
@@ -778,19 +790,7 @@ class RatesPage extends ConsumerWidget {
         appBar: AppBar(
           centerTitle: false,
           titleSpacing: 16,
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Kurlar',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(width: 8),
-              const _LiveStatusBadge(),
-            ],
-          ),
+          title: const Text('Kurlar'),
           actions: [
             IconButton(
               onPressed: () {
@@ -811,19 +811,7 @@ class RatesPage extends ConsumerWidget {
               },
               icon: const Icon(
                 Icons.notifications_active_rounded,
-                color: Colors.redAccent,
               ),
-            ),
-            IconButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const StatsPage(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.bar_chart_rounded),
-              tooltip: 'İstatistikler ve grafikler',
             ),
             IconButton(
               onPressed: () {
@@ -853,8 +841,9 @@ class RatesPage extends ConsumerWidget {
                         ref.read(usdTryRateProvider.notifier).refresh(),
                         ref.read(eurTryRateProvider.notifier).refresh(),
                         ref.read(bigparaByKeyProvider.notifier).refresh(),
-                        ref.read(ratesPricesCacheProvider.notifier).refresh(),
-                      ]).timeout(const Duration(seconds: 20));
+                        ref.read(goldPriceProvider.notifier).refresh(),
+                      ]).timeout(const Duration(seconds: 25));
+                      await ref.read(ratesPricesCacheProvider.notifier).refresh();
                     } catch (_) {
                       // Timeout veya ağ hatası; yenileme biter, kullanıcı tekrar deneyebilir.
                     }
@@ -898,7 +887,7 @@ class RatesPage extends ConsumerWidget {
                   Icon(Icons.circle, size: 8, color: Colors.green.shade700),
                   const SizedBox(width: 6),
                   Text(
-                    'Son güncelleme: ${_formatLastUpdate(DateTime.now())}',
+                    'Veriler kaynaklarına göre güncellenir',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context)
                               .colorScheme
@@ -1274,12 +1263,12 @@ class _RateCardState extends ConsumerState<_RateCard> {
 
     final assetColor = _assetColor(item.id, item.type);
     final theme = Theme.of(context);
-    final buy = item.buyPrice ?? (price != null ? price * 0.98 : null);
-    final sell = item.sellPrice ?? price;
-    final low = item.dailyLow ?? (price != null ? price * 0.98 : null);
-    final high = item.dailyHigh ?? (price != null ? price * 1.02 : null);
-    final closing = item.closingPrice ?? price;
-    final lastUpdated = item.lastUpdated ?? DateTime.now();
+    final buy = item.buyPrice;
+    final sell = item.sellPrice;
+    final low = item.dailyLow;
+    final high = item.dailyHigh;
+    final closing = item.closingPrice;
+    final lastUpdated = item.lastUpdated;
 
     return Card(
       child: Padding(
@@ -1479,7 +1468,7 @@ class _RateCardState extends ConsumerState<_RateCard> {
                       Icon(Icons.access_time_rounded, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.6)),
                       const SizedBox(width: 6),
                       Text(
-                        _formatTime(lastUpdated),
+                        lastUpdated != null ? _formatTime(lastUpdated) : '—',
                         style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.8)),
                       ),
                     ],
@@ -2186,7 +2175,7 @@ class _LiveStatusBadgeState extends State<_LiveStatusBadge>
               Icon(Icons.circle, size: 8, color: Colors.green),
               SizedBox(width: 6),
               Text(
-                'Canlı',
+                'Piyasa',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,

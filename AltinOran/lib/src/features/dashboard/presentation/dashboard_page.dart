@@ -35,28 +35,6 @@ class DashboardPage extends ConsumerWidget {
     final allRates = ref.watch(ratesListProvider);
     final alarmsNotifier = ref.watch(priceAlarmsProvider.notifier);
 
-    // Günlük değişim (portföyü yaklaşık olarak altın fiyat hareketine göre ölçekler).
-    String todayText = 'Bugün: —';
-    if (goldState.price != null &&
-        goldState.previousPrice != null &&
-        summary.totalCost > 0) {
-      final current = goldState.price!.pricePerGram;
-      final previous = goldState.previousPrice!.pricePerGram;
-      if (previous > 0) {
-        final pctChange = ((current - previous) / previous) * 100;
-        final dayPnl = summary.totalCost * pctChange / 100;
-        final sign = dayPnl >= 0 ? '' : '-';
-        final absPnl = dayPnl.abs();
-        final pctText = pctChange >= 0
-            ? pctChange.toStringAsFixed(2)
-            : (-pctChange).toStringAsFixed(2);
-        final formattedPnl = formatDisplayCurrency(
-          absPnl, displayCurrency, usdRateState.rate, eurRateState.rate,
-        );
-        todayText = 'Bugün: $sign$formattedPnl ($sign$pctText%)';
-      }
-    }
-
     // Ana sayfa açıldığında Bigpara verisini bir kez tetikle (Kurlar ile aynı throttle).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final lastAt = ref.read(lastRatesRefreshAtProvider);
@@ -91,150 +69,120 @@ class DashboardPage extends ConsumerWidget {
       bottom: false,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Birikim & Portföy'),
+          title: const Text('Altın Oran'),
         ),
         body: RefreshIndicator(
           onRefresh: () async {
             ref.read(lastRatesRefreshAtProvider.notifier).state = DateTime.now();
-            await ref.read(bigparaByKeyProvider.notifier).refresh();
-            ref.read(usdTryRateProvider.notifier).refresh();
-            ref.read(eurTryRateProvider.notifier).refresh();
+            await Future.wait([
+              ref.read(bigparaByKeyProvider.notifier).refresh(),
+              ref.read(goldPriceProvider.notifier).refresh(),
+              ref.read(usdTryRateProvider.notifier).refresh(),
+              ref.read(eurTryRateProvider.notifier).refresh(),
+            ]);
           },
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
             child: ListView(
+              padding: const EdgeInsets.only(bottom: 24),
+              physics: const AlwaysScrollableScrollPhysics(),
               children: [
-                _DashboardAdBanner(),
-                const SizedBox(height: 8),
-                const SectionHeader(
-                  icon: Icons.pie_chart_rounded,
-                  title: 'Genel Özet',
-                  subtitle: 'Portföy kâr/zarar özeti',
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 4, 4, 14),
+                  child: Text('BİRİKİMİNİZ, BİR BAKIŞTA', style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.primary, letterSpacing: 1.3, fontWeight: FontWeight.w700,
+                  )),
                 ),
-                const SizedBox(height: 4),
-              Center(
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(999),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const PnlDetailsPage(),
-                      ),
-                    );
+                _PortfolioHero(
+                  amount: formatDisplayCurrency(
+                    summary.totalCurrentValue > 0 ? summary.totalCurrentValue : summary.totalCost,
+                    displayCurrency, usdRateState.rate, eurRateState.rate,
+                  ),
+                  amountLabel: summary.totalCurrentValue > 0 ? 'Tahmini değer (eksik fiyatlar olabilir)' : 'Toplam maliyet',
+                  profitLoss: summary.totalProfitLoss,
+                  profitText: formatDisplayCurrency(
+                    summary.totalProfitLoss.abs(), displayCurrency, usdRateState.rate, eurRateState.rate,
+                  ),
+                  todayText: 'Bugün: —',
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PnlDetailsPage())),
+                ),
+                const SizedBox(height: 24),
+                const SectionHeader(icon: Icons.show_chart_rounded, title: 'Piyasa', subtitle: 'Takip ettiğiniz varlıklar'),
+                GoldPriceCard(
+                  state: goldState,
+                  region: selectedRegion,
+                  onRegionChanged: (region) {
+                    ref.read(selectedRegionProvider.notifier).state = region;
+                    ref.read(goldPriceProvider.notifier).refresh();
                   },
-                  child: ProfitLossRing(
-                    profitLoss: summary.totalProfitLoss,
-                    totalCost: summary.totalCost,
-                    formattedAmount: summary.totalProfitLoss >= 0
-                        ? formatDisplayCurrency(
-                            summary.totalProfitLoss,
-                            displayCurrency,
-                            usdRateState.rate,
-                            eurRateState.rate,
-                          )
-                        : '-${formatDisplayCurrency(
-                            -summary.totalProfitLoss,
-                            displayCurrency,
-                            usdRateState.rate,
-                            eurRateState.rate,
-                          )}',
-                  ),
+                  onRefresh: () async {
+                    ref.read(lastRatesRefreshAtProvider.notifier).state = DateTime.now();
+                    await Future.wait([
+                      ref.read(bigparaByKeyProvider.notifier).refresh(),
+                      ref.read(goldPriceProvider.notifier).refresh(),
+                    ]);
+                  },
                 ),
-              ),
-              const SizedBox(height: 16),
-              GoldPriceCard(
-                state: goldState,
-                region: selectedRegion,
-                onRegionChanged: (region) =>
-                    ref.read(selectedRegionProvider.notifier).state = region,
-                onRefresh: () async {
-                  ref.read(lastRatesRefreshAtProvider.notifier).state = DateTime.now();
-                  await ref.read(bigparaByKeyProvider.notifier).refresh();
-                },
-              ),
-              const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Toplam Birikim Değeri',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // TL toplam değer
-                      Text(
-                        formatDisplayCurrency(
-                          summary.totalCurrentValue > 0 ? summary.totalCurrentValue : summary.totalCost,
-                          displayCurrency,
-                          usdRateState.rate,
-                          eurRateState.rate,
-                        ),
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      // İkincil para birimi (TL seçiliyse ≈ USD, aksi halde ≈ ₺)
-                      if (displayCurrency == DisplayCurrency.tl &&
-                          usdRateState.rate != null &&
-                          usdRateState.rate! > 0) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          '≈ \$${formatMoney((summary.totalCurrentValue > 0 ? summary.totalCurrentValue : summary.totalCost) / usdRateState.rate!)}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                          ),
-                        ),
-                      ]
-                      else if ((displayCurrency == DisplayCurrency.usd || displayCurrency == DisplayCurrency.eur) &&
-                          usdRateState.rate != null &&
-                          usdRateState.rate! > 0) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          '≈ ₺${formatMoney(summary.totalCurrentValue > 0 ? summary.totalCurrentValue : summary.totalCost)}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 4),
-                      Text(
-                        todayText,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Portföy Dağılımı',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              const SectionHeader(
-                icon: Icons.stacked_bar_chart_rounded,
-                title: 'Portföy Dağılımı',
-                subtitle: 'Maden, döviz ve coin dağılımı',
-              ),
-              const SizedBox(height: 4),
-              const PortfolioDistributionCard(),
+                const SizedBox(height: 24),
+                const SectionHeader(icon: Icons.pie_chart_outline_rounded, title: 'Portföy dağılımı', subtitle: 'Birikimlerinizin genel görünümü'),
+                const PortfolioDistributionCard(),
             ],
           ),
         ),
       ),
     ),
+    );
+  }
+}
+
+class _PortfolioHero extends StatelessWidget {
+  const _PortfolioHero({required this.amount, required this.amountLabel, required this.profitLoss, required this.profitText, required this.todayText, required this.onTap});
+  final String amount;
+  final String amountLabel;
+  final double profitLoss;
+  final String profitText;
+  final String todayText;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
+    final tint = dark ? const Color(0xFF263C32) : const Color(0xFFE6EEE6);
+    final profitColor = profitLoss < 0 ? const Color(0xFFB76660) : theme.colorScheme.primary;
+    return Material(
+      color: tint,
+      borderRadius: BorderRadius.circular(26),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(26),
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Expanded(child: Text(amountLabel, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: .7)))),
+              Icon(Icons.north_east_rounded, size: 18, color: theme.colorScheme.primary),
+            ]),
+            const SizedBox(height: 10),
+            Text(amount, style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -1.1)),
+            const SizedBox(height: 20),
+            Container(height: 1, color: theme.colorScheme.primary.withValues(alpha: .15)),
+            const SizedBox(height: 16),
+            Row(children: [
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('Tahmini kâr / zarar', style: theme.textTheme.bodySmall),
+                const SizedBox(height: 4),
+                Text('${profitLoss < 0 ? '−' : profitLoss > 0 ? '+' : ''}$profitText', style: theme.textTheme.titleMedium?.copyWith(color: profitColor, fontWeight: FontWeight.w700)),
+              ])),
+              Icon(Icons.chevron_right_rounded, color: theme.colorScheme.primary),
+            ]),
+            if (todayText != 'Bugün: —') ...[
+              const SizedBox(height: 8),
+              Text(todayText, style: theme.textTheme.bodySmall),
+            ],
+          ]),
+        ),
+      ),
     );
   }
 }
@@ -1178,11 +1126,13 @@ class _GoldPriceCardState extends ConsumerState<GoldPriceCard>
         };
         final price = basePrice * ratio;
         priceText = '${price.toStringAsFixed(2)} ${useTry ? 'TL' : 'USD'} / gr';
-        subtitle = 'Son güncelleme: ${DateTime.now().toLocal().toString().substring(0, 16)}';
+        subtitle = state.price != null && basePrice == state.price!.pricePerGram
+            ? 'Son güncelleme: ${state.price!.lastUpdated.toLocal().toString().substring(0, 16)}'
+            : 'Kaynak: Bigpara';
         showGoldError = false;
       } else {
         priceText = 'Henüz veri yok';
-        subtitle = 'Güncel fiyatı almak için yenile. Backend (gold-api) çalışıyor mu?';
+        subtitle = 'Fiyat alınamadı. Yenileyerek tekrar deneyin.';
         showGoldError = state.errorMessage != null;
       }
     } else if (asset != null) {
@@ -1246,7 +1196,7 @@ class _GoldPriceCardState extends ConsumerState<GoldPriceCard>
                           Icon(Icons.circle, size: 8, color: Colors.green),
                           SizedBox(width: 6),
                           Text(
-                            'Canlı',
+                            'Piyasa',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,

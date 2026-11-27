@@ -46,17 +46,17 @@ const List<SupportedAsset> _goldAssets = [
   SupportedAsset(id: 'gold_tam', name: 'Tam Altın', category: AssetCategory.gold, unitLabel: 'adet'),
   SupportedAsset(id: 'gold_cumhuriyet', name: 'Cumhuriyet Altını', category: AssetCategory.gold, unitLabel: 'adet'),
   SupportedAsset(id: 'gold_bilezik22', name: '22 Ayar Bilezik', category: AssetCategory.gold, unitLabel: 'gr'),
-  SupportedAsset(id: 'gold_ons', name: 'Ons Altın', category: AssetCategory.gold, unitLabel: 'gr'),
+  SupportedAsset(id: 'gold_ons', name: 'Ons Altın', category: AssetCategory.gold, unitLabel: 'ons'),
 ];
 
 const List<SupportedAsset> _silverAssets = [
   SupportedAsset(id: 'silver_gram', name: 'Gram Gümüş', category: AssetCategory.silver, unitLabel: 'gr'),
-  SupportedAsset(id: 'silver_ons', name: 'Ons Gümüş', category: AssetCategory.silver, unitLabel: 'gr'),
+  SupportedAsset(id: 'silver_ons', name: 'Ons Gümüş', category: AssetCategory.silver, unitLabel: 'ons'),
 ];
 
 const List<SupportedAsset> _platinumAssets = [
   SupportedAsset(id: 'platinum_gram', name: 'Gram Platin', category: AssetCategory.platinum, unitLabel: 'gr'),
-  SupportedAsset(id: 'platinum_ons', name: 'Ons Platin', category: AssetCategory.platinum, unitLabel: 'gr'),
+  SupportedAsset(id: 'platinum_ons', name: 'Ons Platin', category: AssetCategory.platinum, unitLabel: 'ons'),
 ];
 
 const List<SupportedAsset> _metalAssets = [
@@ -124,7 +124,7 @@ String categoryLabel(AssetCategory c) {
     case AssetCategory.platinum:
       return 'Platin türleri';
     case AssetCategory.metal:
-      return 'Diğer madener';
+      return 'Diğer madenler';
     case AssetCategory.crypto:
       return 'Popüler coinler';
     case AssetCategory.currency:

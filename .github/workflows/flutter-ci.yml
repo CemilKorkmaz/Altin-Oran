@@ -3,6 +3,11 @@ on:
   push:
     branches: ["arena/f284a20c-altin-oran"]
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the tested APK as a prerelease
+        type: boolean
+        default: false
 permissions:
   contents: write
 jobs:
@@ -23,6 +28,8 @@ jobs:
           channel: stable
       - run: flutter pub get
       - run: flutter test
+      - name: Check live API availability
+        run: python3 tool/check_live_apis.py
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
@@ -30,17 +37,17 @@ jobs:
           path: AltinOran/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
       - name: Publish test release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/arena/f284a20c-altin-oran'
+        if: github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/arena/f284a20c-altin-oran'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          tag=v0.1.0-test.1
+          tag=v0.2.0-test.1
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release $tag already exists; leaving it unchanged."
             exit 0
           fi
           gh release create "$tag" build/app/outputs/flutter-apk/app-release.apk#Altin-Oran-test.apk \
             --target "$GITHUB_SHA" --prerelease \
-            --title "Altın Oran 0.1.0 — Test sürümü" \
+            --title "Altın Oran 0.2.0 — Yeni tasarım test sürümü" \
             --notes-file ../RELEASE-NOTES.md

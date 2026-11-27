@@ -42,8 +42,8 @@ class SettingsPage extends ConsumerWidget {
                     title: const Text('Tema'),
                     subtitle: Text(
                       settings.themeMode == AppThemeMode.darkGold
-                          ? 'Koyu (siyah & altın)'
-                          : 'Açık (krem & altın)',
+                          ? 'Koyu görünüm'
+                          : 'Açık',
                     ),
                     trailing: DropdownButton<AppThemeMode>(
                       value: settings.themeMode,
@@ -51,11 +51,11 @@ class SettingsPage extends ConsumerWidget {
                       items: const [
                         DropdownMenuItem(
                           value: AppThemeMode.light,
-                          child: Text('Açık (krem & altın)'),
+                          child: Text('Açık'),
                         ),
                         DropdownMenuItem(
                           value: AppThemeMode.darkGold,
-                          child: Text('Koyu (siyah & sarı)'),
+                          child: Text('Koyu'),
                         ),
                       ],
                       onChanged: (v) {

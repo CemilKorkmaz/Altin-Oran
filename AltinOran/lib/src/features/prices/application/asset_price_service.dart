@@ -6,6 +6,7 @@ import '../domain/supported_asset.dart';
 import 'api_config.dart';
 import 'eur_try_rate_providers.dart';
 import 'gold_price_providers.dart';
+import 'metal_price_parser.dart';
 import 'usd_try_rate_providers.dart';
 
 /// Tek bir varlık için canlı fiyat sonucu (TL veya USD biriminde).
@@ -201,6 +202,7 @@ class AssetPriceService {
         currencyCode = 'XPT';
         break;
       case AssetCategory.metal:
+        if (asset.id != 'metal_palladium_gram') return _metalError(asset);
         currencyCode = 'XPD';
         break;
       default:
@@ -230,21 +232,17 @@ class AssetPriceService {
       }
       final rates = body['rates'] as Map<String, dynamic>?;
       if (rates == null) return _metalError(asset);
-      final rateKey = rates.keys
-          .cast<String>()
-          .where((k) => k.contains(currencyCode as String))
-          .toList();
-      if (rateKey.isEmpty) return _metalError(asset);
-      final pricePerOunce = (rates[rateKey.first] as num).toDouble();
-      final pricePerGram = pricePerOunce / _troyOunceToGram;
+      final pricePerOunce = metalPricePerOunce(rates, currencyCode, 'USD');
+      if (pricePerOunce == null) return _metalError(asset);
+      final price = asset.id.endsWith('_ons') ? pricePerOunce : pricePerOunce / _troyOunceToGram;
       if (useTry) {
         final rate = _usdTryRate;
         if (rate == null) {
           return AssetPriceResult(price: null, unitLabel: asset.unitLabel, lastUpdated: DateTime.now(), error: 'USD/TRY kur alınamadı');
         }
-        return AssetPriceResult(price: pricePerGram * rate, unitLabel: asset.unitLabel, lastUpdated: DateTime.now());
+        return AssetPriceResult(price: price * rate, unitLabel: asset.unitLabel, lastUpdated: DateTime.now());
       }
-      return AssetPriceResult(price: pricePerGram, unitLabel: asset.unitLabel, lastUpdated: DateTime.now());
+      return AssetPriceResult(price: price, unitLabel: asset.unitLabel, lastUpdated: DateTime.now());
     } catch (_) {
       return _metalError(asset);
     }

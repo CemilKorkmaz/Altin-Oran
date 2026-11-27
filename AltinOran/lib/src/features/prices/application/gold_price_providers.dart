@@ -11,6 +11,7 @@ import 'api_config.dart';
 import 'bigpara_gold_api_client.dart';
 import 'canlidoviz_client.dart';
 import 'kapalicarsi_client.dart';
+import 'metal_price_parser.dart';
 
 const _troyOunceToGram = 31.1034768;
 
@@ -100,7 +101,9 @@ final supportedAssetByIdProvider = Provider.family<SupportedAsset?, String>((ref
 });
 
 class GoldPriceNotifier extends StateNotifier<GoldPriceState> {
-  GoldPriceNotifier(this._ref) : super(GoldPriceState.initial());
+  GoldPriceNotifier(this._ref) : super(GoldPriceState.initial()) {
+    refresh();
+  }
 
   final Ref _ref;
 
@@ -279,16 +282,7 @@ class GoldPriceNotifier extends StateNotifier<GoldPriceState> {
       if (body['success'] != true) return null;
       final rates = body['rates'] as Map<String, dynamic>?;
       if (rates == null) return null;
-      final xauKey = rates.keys.cast<String>().where((k) => k.toUpperCase().contains('XAU')).firstOrNull;
-      if (xauKey == null) return null;
-      final raw = rates[xauKey];
-      double? rate;
-      if (raw is num) rate = raw.toDouble();
-      else if (raw is String) rate = double.tryParse(raw.replaceAll(',', '.'));
-      if (rate == null || rate <= 0) return null;
-      // API: 1 USD = rate XAU (ons) → 1 ons = 1/rate USD. Oran küçükse (< 1) bu formatta.
-      if (rate < 1) return 1 / rate;
-      return rate; // Zaten ons başına USD olarak dönmüş olabilir
+      return metalPricePerOunce(rates, 'XAU', 'USD');
     } catch (e) {
       if (kDebugMode) debugPrint('Altın: MetalPriceAPI hata — $e');
       return null;
@@ -310,18 +304,10 @@ class GoldPriceNotifier extends StateNotifier<GoldPriceState> {
       if (body['success'] != true) return null;
       final rates = body['rates'] as Map<String, dynamic>?;
       if (rates == null) return null;
-      final xauKey = rates.keys.cast<String>().where((k) => k.toUpperCase().contains('XAU')).firstOrNull;
-      if (xauKey == null) return null;
-      final raw = rates[xauKey];
-      double? rate;
-      if (raw is num) rate = raw.toDouble();
-      else if (raw is String) rate = double.tryParse(raw.replaceAll(',', '.'));
-      if (rate == null || rate <= 0) return null;
+      final pricePerOunce = metalPricePerOunce(rates, 'XAU', baseCurrency);
+      if (pricePerOunce == null) return null;
       final ts = body['timestamp'] as int?;
       final lastUpdated = ts != null ? DateTime.fromMillisecondsSinceEpoch(ts * 1000) : DateTime.now();
-      // Oran küçükse (1 TRY = rate XAU gibi) → ons fiyatı = 1/rate
-      double pricePerOunce = rate;
-      if (rate < 0.01) pricePerOunce = 1 / rate;
       final pricePerGram = pricePerOunce / _troyOunceToGram;
       return GoldPrice(
         region: region,

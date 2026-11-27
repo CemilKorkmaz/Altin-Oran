@@ -1,198 +1,111 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-ThemeData buildLightTheme() {
-  // Biraz koyu altın sarısı / krem arka plan; kâr barı ve kartlar daha net görünsün.
-  const primaryColor = Color(0xFFB8860B); // koyu altın (dark goldenrod)
-  const primaryLight = Color(0xFFD4A84B); // orta altın
-  const accentColor = Color(0xFF8B6914); // derin altın / vurgu
-  const background = Color(0xFFEDE4D4); // koyu krem / buğday
-  const surface = Color(0xFFF5EDE0); // kartlar: belirgin krem
-  const surfaceVariant = Color(0xFFE8DCC8); // input / ikincil yüzey
-  const onBackground = Color(0xFF2C2416); // koyu kahve metin
-  const onSurface = Color(0xFF3D3426); // kart üstü metin
-  const outline = Color(0xFFB8A88A); // çerçeve / border (biraz koyu)
+/// Altın Oran'ın ortak, sakin ve iOS esintili görsel dili.
+ThemeData buildLightTheme() => _buildTheme(Brightness.light);
+ThemeData buildDarkGoldTheme() => _buildTheme(Brightness.dark);
 
-  final base = ThemeData.light(useMaterial3: true);
-
-  final colorScheme = ColorScheme.light(
-    primary: primaryColor,
-    onPrimary: Colors.white,
-    primaryContainer: primaryLight.withOpacity(0.25),
-    secondary: accentColor,
-    onSecondary: Colors.white,
-    surface: surface,
-    onSurface: onSurface,
-    surfaceContainerHighest: surfaceVariant,
-    error: const Color(0xFFB91C1C),
-    onError: Colors.white,
-    outline: outline,
-  );
-
-  return base.copyWith(
-    colorScheme: colorScheme.copyWith(
-      surface: surface,
-      onSurface: onSurface,
-    ),
-    scaffoldBackgroundColor: background,
-    appBarTheme: AppBarTheme(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      centerTitle: true,
-      foregroundColor: onBackground,
-      titleTextStyle: base.textTheme.titleLarge?.copyWith(
-        color: onBackground,
-        fontWeight: FontWeight.w600,
-      ),
-      iconTheme: const IconThemeData(color: onBackground),
-    ),
-    cardTheme: CardThemeData(
-      color: surface,
-      elevation: 1,
-      shadowColor: primaryColor.withOpacity(0.08),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-    ),
-    textTheme: base.textTheme.apply(
-      bodyColor: onBackground,
-      displayColor: onBackground,
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: surfaceVariant,
-      border: const OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: outline, width: 1),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: primaryColor, width: 2),
-      ),
-      labelStyle: const TextStyle(color: onSurface),
-      hintStyle: TextStyle(color: onSurface.withOpacity(0.6)),
-    ),
-    bottomNavigationBarTheme: BottomNavigationBarThemeData(
-      backgroundColor: surface,
-      selectedItemColor: primaryColor,
-      unselectedItemColor: onSurface.withOpacity(0.6),
-      type: BottomNavigationBarType.fixed,
-      elevation: 8,
-    ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: primaryColor,
-      foregroundColor: Colors.white,
-      elevation: 4,
-    ),
-    dividerColor: outline.withOpacity(0.5),
-    listTileTheme: ListTileThemeData(
-      textColor: onSurface,
-      iconColor: primaryColor,
-    ),
-    snackBarTheme: SnackBarThemeData(
-      backgroundColor: onBackground,
-      contentTextStyle: const TextStyle(color: Colors.white),
-      behavior: SnackBarBehavior.floating,
-    ),
-  );
-}
-
-ThemeData buildDarkGoldTheme() {
-  const primary = Color(0xFFFACC15); // parlak altın / sarı
-  const secondary = Color(0xFFEAB308);
-  const background = Color(0xFF111827); // lacivert-siyah arka plan
-  const surface = Color(0xFF020617); // kartlar için daha koyu
-  const surfaceVariant = Color(0xFF1E293B);
-  const onBackground = Color(0xFFF9FAFB);
-  const onSurface = Color(0xFFE5E7EB);
-  const outline = Color(0xFF4B5563);
-
-  final base = ThemeData.dark(useMaterial3: true);
-
-  final scheme = ColorScheme.dark(
+ThemeData _buildTheme(Brightness brightness) {
+  final dark = brightness == Brightness.dark;
+  final background = dark ? const Color(0xFF111817) : const Color(0xFFF4F5F2);
+  final surface = dark ? const Color(0xFF1C2623) : Colors.white;
+  final text = dark ? const Color(0xFFF1F4F0) : const Color(0xFF1F2D29);
+  final muted = dark ? const Color(0xFF9DADA6) : const Color(0xFF73817A);
+  final primary = dark ? const Color(0xFFB6C9B8) : const Color(0xFF526E60);
+  final separator = dark ? const Color(0xFF34413C) : const Color(0xFFE5EAE5);
+  final input = dark ? const Color(0xFF25312D) : const Color(0xFFF3F5F2);
+  final base = ThemeData(brightness: brightness, useMaterial3: true);
+  final scheme = ColorScheme.fromSeed(
+    seedColor: primary,
+    brightness: brightness,
     primary: primary,
-    onPrimary: Colors.black,
-    primaryContainer: primary.withOpacity(0.18),
-    secondary: secondary,
-    onSecondary: Colors.black,
     surface: surface,
-    onSurface: onSurface,
-    surfaceContainerHighest: surfaceVariant,
-    background: background,
-    onBackground: onBackground,
-    outline: outline,
-    error: const Color(0xFFEF4444),
-    onError: Colors.black,
+    onSurface: text,
+    outline: muted,
+    outlineVariant: separator,
+    error: const Color(0xFFBA625B),
   );
-
+  final textTheme = base.textTheme.apply(bodyColor: text, displayColor: text).copyWith(
+    headlineMedium: base.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.8),
+    titleLarge: base.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.5),
+    titleMedium: base.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, letterSpacing: -0.2),
+    bodyMedium: base.textTheme.bodyMedium?.copyWith(height: 1.4),
+    bodySmall: base.textTheme.bodySmall?.copyWith(color: muted, height: 1.35),
+  );
   return base.copyWith(
     colorScheme: scheme,
     scaffoldBackgroundColor: background,
+    textTheme: textTheme,
+    pageTransitionsTheme: const PageTransitionsTheme(builders: {
+      TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+    }),
     appBarTheme: AppBarTheme(
-      backgroundColor: Colors.transparent,
+      backgroundColor: background,
+      foregroundColor: text,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
-      centerTitle: true,
-      foregroundColor: onBackground,
-      titleTextStyle: base.textTheme.titleLarge?.copyWith(
-        color: onBackground,
-        fontWeight: FontWeight.w600,
-      ),
-      iconTheme: const IconThemeData(color: onBackground),
+      scrolledUnderElevation: 0,
+      centerTitle: false,
+      titleSpacing: 20,
+      toolbarHeight: 60,
+      systemOverlayStyle: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      titleTextStyle: textTheme.titleLarge,
     ),
     cardTheme: CardThemeData(
       color: surface,
-      elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.4),
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      margin: const EdgeInsets.symmetric(vertical: 4),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: outline.withOpacity(0.6)),
+        borderRadius: BorderRadius.circular(22),
+        side: BorderSide(color: separator.withValues(alpha: dark ? 0.7 : 0.8)),
       ),
-    ),
-    textTheme: base.textTheme.apply(
-      bodyColor: onBackground,
-      displayColor: onBackground,
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: surfaceVariant,
-      border: const OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: outline.withOpacity(0.6), width: 1),
-      ),
-      focusedBorder: const OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
-        borderSide: BorderSide(color: primary, width: 2),
-      ),
-      labelStyle: const TextStyle(color: onSurface),
-      hintStyle: TextStyle(color: onSurface.withOpacity(0.7)),
+      fillColor: input,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: primary, width: 1.3)),
+      labelStyle: TextStyle(color: muted),
+      hintStyle: TextStyle(color: muted),
+    ),
+    filledButtonTheme: FilledButtonThemeData(style: FilledButton.styleFrom(
+      backgroundColor: primary, foregroundColor: dark ? const Color(0xFF15211C) : Colors.white,
+      minimumSize: const Size(48, 48), elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      textStyle: const TextStyle(fontWeight: FontWeight.w600),
+    )),
+    outlinedButtonTheme: OutlinedButtonThemeData(style: OutlinedButton.styleFrom(
+      foregroundColor: primary, minimumSize: const Size(48, 48),
+      side: BorderSide(color: separator),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    )),
+    chipTheme: base.chipTheme.copyWith(
+      backgroundColor: input,
+      selectedColor: primary.withValues(alpha: 0.15),
+      side: BorderSide.none,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      labelStyle: TextStyle(color: text, fontSize: 13, fontWeight: FontWeight.w500),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: surface,
       selectedItemColor: primary,
-      unselectedItemColor: onSurface.withOpacity(0.7),
+      unselectedItemColor: muted,
       type: BottomNavigationBarType.fixed,
-      elevation: 12,
+      elevation: 0,
     ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: primary,
-      foregroundColor: Colors.black,
-      elevation: 6,
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: primary, foregroundColor: dark ? const Color(0xFF15211C) : Colors.white, elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
     ),
-    dividerColor: outline.withOpacity(0.6),
-    listTileTheme: ListTileThemeData(
-      textColor: onSurface,
-      iconColor: primary,
-    ),
-    snackBarTheme: SnackBarThemeData(
-      backgroundColor: Colors.black.withOpacity(0.9),
-      contentTextStyle: const TextStyle(color: Colors.white),
-      behavior: SnackBarBehavior.floating,
-    ),
+    dialogTheme: DialogThemeData(backgroundColor: surface, surfaceTintColor: Colors.transparent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24))),
+    bottomSheetTheme: BottomSheetThemeData(backgroundColor: surface, surfaceTintColor: Colors.transparent, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(26)))),
+    dividerColor: separator,
+    listTileTheme: ListTileThemeData(textColor: text, iconColor: primary, contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3)),
+    snackBarTheme: SnackBarThemeData(backgroundColor: dark ? const Color(0xFF34433B) : const Color(0xFF283B32), contentTextStyle: const TextStyle(color: Colors.white), behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
   );
 }
-

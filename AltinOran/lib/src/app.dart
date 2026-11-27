@@ -19,7 +19,7 @@ class BirikimPortfoyApp extends ConsumerWidget {
     };
 
     return MaterialApp(
-      title: 'Birikim & Portföy',
+      title: 'Altın Oran',
       debugShowCheckedModeBanner: false,
       scrollBehavior: const _NoStretchScrollBehavior(),
       theme: buildLightTheme(),
@@ -37,7 +37,7 @@ class _NoStretchScrollBehavior extends MaterialScrollBehavior {
 
   @override
   ScrollPhysics getScrollPhysics(BuildContext context) {
-    return const ClampingScrollPhysics();
+    return const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
   }
 
   @override

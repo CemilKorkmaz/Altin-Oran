@@ -27,10 +27,10 @@ class EmptyStateView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 72,
-              color: theme.colorScheme.outline,
+            Container(
+              width: 76, height: 76,
+              decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: .09), borderRadius: BorderRadius.circular(24)),
+              child: Icon(icon, size: 34, color: theme.colorScheme.primary),
             ),
             const SizedBox(height: 20),
             Text(

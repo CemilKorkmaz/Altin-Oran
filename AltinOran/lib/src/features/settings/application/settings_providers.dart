@@ -45,7 +45,7 @@ class AppSettings {
   }
 
   static const AppSettings initial = AppSettings(
-    themeMode: AppThemeMode.darkGold,
+    themeMode: AppThemeMode.light,
     displayCurrency: DisplayCurrency.tl,
     defaultGramPurity: GoldPurity.carat24,
     biometricEnabled: false,

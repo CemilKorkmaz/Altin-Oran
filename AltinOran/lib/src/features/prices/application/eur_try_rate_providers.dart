@@ -61,7 +61,7 @@ class EurTryRateNotifier extends StateNotifier<EurTryRateState> {
       '/latest',
       {'from': 'EUR', 'to': 'TRY'},
     );
-    final response = await client.get(uri);
+    final response = await client.get(uri).timeout(const Duration(seconds: 10));
     if (response.statusCode != 200) {
       throw Exception('HTTP ${response.statusCode}');
     }

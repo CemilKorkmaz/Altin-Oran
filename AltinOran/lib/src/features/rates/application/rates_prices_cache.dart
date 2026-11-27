@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../prices/application/asset_price_service.dart';
 import '../../prices/application/gold_price_providers.dart';
+import '../../prices/application/usd_try_rate_providers.dart';
 import '../../prices/domain/gold_price.dart';
 import '../../prices/domain/supported_asset.dart';
 
@@ -32,55 +33,50 @@ class RatesPricesCacheNotifier extends StateNotifier<Map<String, CachedRateData>
 
   final Ref _ref;
 
-  bool _useTry = true;
+  bool _refreshing = false;
 
   Future<void> refresh() async {
-    _useTry = _ref.read(selectedRegionProvider) == PriceRegion.turkey;
-    final assets = _ref.read(allSupportedAssetsProvider);
-    final service = _ref.read(assetPriceServiceProvider);
-    final newMap = Map<String, CachedRateData>.from(state);
-
-    for (final asset in assets) {
-      if (asset.id == 'gold_gram') continue; // gold zaten goldPriceProvider'dan
-      if (asset.category == AssetCategory.crypto && asset.symbol != null) {
-        try {
-          final data = await service.fetchCrypto24hr(asset, useTry: _useTry);
-          if (data.price != null && data.price! > 0) {
-            const spread = 0.002; // %0,2 kripto
-            newMap[asset.id] = CachedRateData(
-              lastPrice: data.price!,
-              lastUpdated: DateTime.now(),
-              buyPrice: data.price! * (1 - spread / 2),
-              sellPrice: data.price! * (1 + spread / 2),
-              dailyLow: data.low,
-              dailyHigh: data.high,
-              changePercent: data.changePercent,
-            );
-          }
-        } catch (_) {}
-        continue;
+    if (_refreshing) return;
+    _refreshing = true;
+    try {
+      // The rates list is denominated in TRY independently of the dashboard region.
+      if (_ref.read(usdTryRateProvider).rate == null) {
+        await _ref.read(usdTryRateProvider.notifier).refresh();
       }
-      if (asset.id == 'fx_usd_try' || asset.id == 'fx_eur_try') continue; // kurlar provider'dan
-      if (asset.category == AssetCategory.silver ||
+      final assets = _ref.read(allSupportedAssetsProvider).where((asset) =>
+          asset.category == AssetCategory.crypto ||
+          asset.category == AssetCategory.silver ||
           asset.category == AssetCategory.platinum ||
-          asset.category == AssetCategory.metal) {
-        try {
-          final res = await service.fetchPrice(asset, useTry: _useTry);
-          if (res.price != null && res.price! > 0) {
-            const spread = 0.01; // %1 maden
-            newMap[asset.id] = CachedRateData(
-              lastPrice: res.price!,
-              lastUpdated: res.lastUpdated,
-              buyPrice: res.price! * (1 - spread / 2),
-              sellPrice: res.price! * (1 + spread / 2),
-            );
+          asset.category == AssetCategory.metal).toList();
+      final service = _ref.read(assetPriceServiceProvider);
+      // Bounded concurrency: publish each batch rather than wait for every API.
+      for (var i = 0; i < assets.length; i += 6) {
+        final batch = assets.skip(i).take(6);
+        final results = await Future.wait(batch.map((asset) async {
+          if (asset.category == AssetCategory.crypto && asset.symbol != null) {
+            final data = await service.fetchCrypto24hr(asset, useTry: true);
+            if (data.price == null || data.price! <= 0) return (asset.id, null as CachedRateData?);
+            return (asset.id, CachedRateData(
+              lastPrice: data.price!, lastUpdated: DateTime.now(),
+              dailyLow: data.low, dailyHigh: data.high, changePercent: data.changePercent,
+            ));
           }
-        } catch (_) {}
+          final result = await service.fetchPrice(asset, useTry: true);
+          if (result.price == null || result.price! <= 0) return (asset.id, null as CachedRateData?);
+          return (asset.id, CachedRateData(lastPrice: result.price!, lastUpdated: result.lastUpdated));
+        }));
+        if (!mounted) return;
+        final updated = Map<String, CachedRateData>.from(state);
+        for (final (id, data) in results) {
+          if (data != null) updated[id] = data;
+        }
+        state = updated;
       }
+    } finally {
+      _refreshing = false;
     }
-
-    state = newMap;
   }
+
 }
 
 final ratesPricesCacheProvider =

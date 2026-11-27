@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../alerts/application/notification_service.dart';
@@ -12,104 +13,6 @@ import '../../goals/presentation/goals_page.dart';
 import '../../settings/presentation/settings_page.dart';
 import '../../settings/application/settings_providers.dart';
 import '../../transactions/presentation/add_transaction_page.dart';
-
-/// Ekranda sürüklenebilir FAB: basılı tutup kaydırınca konumu değişir.
-/// bodySize: Scaffold body alanının boyutu (alt çizgi = nav bar üstü).
-class _DraggableFab extends StatefulWidget {
-  const _DraggableFab({required this.onPressed, required this.bodySize});
-
-  final VoidCallback onPressed;
-  final Size bodySize;
-
-  @override
-  State<_DraggableFab> createState() => _DraggableFabState();
-}
-
-class _DraggableFabState extends State<_DraggableFab> {
-  Offset _offset = Offset.zero;
-  bool _initialized = false;
-  static const double _kFabWidth = 176;
-  static const double _kFabHeight = 48;
-  static const double _kPadding = 16;
-  /// Alt sınır: body'nin en altı (nav bar üst çizgisi) — FAB tam çizgiye kadar inebilir.
-  static const double _kMinMarginAboveNav = 0;
-
-  void _initPosition(Size bodySize, EdgeInsets padding) {
-    if (_initialized) return;
-    _initialized = true;
-    final bottomLimit = bodySize.height - _kFabHeight - _kPadding - _kMinMarginAboveNav;
-    _offset = Offset(
-      bodySize.width - _kFabWidth - _kPadding,
-      bottomLimit,
-    );
-    _clampOffset(bodySize, padding);
-  }
-
-  void _clampOffset(Size bodySize, EdgeInsets padding) {
-    final topLimit = padding.top + _kPadding;
-    final bottomLimit = bodySize.height - _kFabHeight - _kPadding - _kMinMarginAboveNav;
-    _offset = Offset(
-      _offset.dx.clamp(_kPadding, bodySize.width - _kFabWidth - _kPadding),
-      _offset.dy.clamp(topLimit, bottomLimit),
-    );
-  }
-
-  void _onPanUpdate(Size bodySize, EdgeInsets padding, DragUpdateDetails details) {
-    setState(() {
-      _offset += details.delta;
-      _clampOffset(bodySize, padding);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final padding = MediaQuery.paddingOf(context);
-    _initPosition(widget.bodySize, padding);
-    _clampOffset(widget.bodySize, padding);
-
-    return Positioned(
-      left: _offset.dx,
-      top: _offset.dy,
-      child: Material(
-        elevation: 8,
-        shadowColor: Colors.black45,
-        borderRadius: BorderRadius.circular(16),
-        child: GestureDetector(
-          onTap: widget.onPressed,
-          onPanUpdate: (details) => _onPanUpdate(widget.bodySize, padding, details),
-            child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: widget.onPressed,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.add_rounded, color: Colors.black87, size: 22),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Yatırım Ekle / Sat',
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w700,
-                        fontSize: Theme.of(context).textTheme.titleSmall?.fontSize ?? 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class HomeShellPage extends ConsumerStatefulWidget {
   const HomeShellPage({super.key});
@@ -181,53 +84,56 @@ class _HomeShellPageState extends ConsumerState<HomeShellPage> {
       body: Column(
         children: [
           Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final bodySize = Size(
-                  constraints.maxWidth,
-                  constraints.maxHeight,
-                );
-                return Stack(
-                  children: [
-                    _pages[_index],
-                    if (showFab)
-                      _DraggableFab(
-                        onPressed: () {
-                          final defaultPurity = ref.read(appSettingsProvider).defaultGramPurity;
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => AddTransactionPage(
-                                presetGoldPurity: defaultPurity,
-                              ),
-                            ),
-                          );
-                        },
-                        bodySize: bodySize,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  bottom: showFab ? 70 : 0,
+                  child: _pages[_index],
+                ),
+                if (showFab)
+                  Positioned(
+                    right: 20,
+                    bottom: 12,
+                    child: FilledButton.icon(
+                      onPressed: () {
+                        final defaultPurity = ref.read(appSettingsProvider).defaultGramPurity;
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => AddTransactionPage(presetGoldPurity: defaultPurity),
+                        ));
+                      },
+                      icon: const Icon(CupertinoIcons.add, size: 19),
+                      label: const Text('İşlem ekle'),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        shape: const StadiumBorder(),
                       ),
-                  ],
-                );
-              },
+                    ),
+                  ),
+              ],
             ),
           ),
           Container(
             decoration: BoxDecoration(
               color: theme.colorScheme.surface,
+              border: Border(top: BorderSide(color: theme.dividerColor)),
             ),
             child: SafeArea(
               top: false,
               child: BottomNavigationBar(
-                elevation: 0,
-                backgroundColor: Colors.transparent,
                 currentIndex: _index,
                 onTap: (i) => setState(() => _index = i),
                 type: BottomNavigationBarType.fixed,
+                elevation: 0,
+                iconSize: 22,
+                selectedFontSize: 10,
+                unselectedFontSize: 10,
                 items: const [
-                  BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Ana Sayfa'),
-                  BottomNavigationBarItem(icon: Icon(Icons.trending_up_rounded), label: 'Kurlar'),
-                  BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet_rounded), label: 'Birikimlerim'),
-                  BottomNavigationBarItem(icon: Icon(Icons.show_chart_rounded), label: 'İstatistik'),
-                  BottomNavigationBarItem(icon: Icon(Icons.flag_rounded), label: 'Hedefler'),
-                  BottomNavigationBarItem(icon: Icon(Icons.settings_rounded), label: 'Ayarlar'),
+                  BottomNavigationBarItem(icon: Icon(CupertinoIcons.house), activeIcon: Icon(CupertinoIcons.house_fill), label: 'Ana sayfa'),
+                  BottomNavigationBarItem(icon: Icon(CupertinoIcons.chart_bar), activeIcon: Icon(CupertinoIcons.chart_bar_fill), label: 'Kurlar'),
+                  BottomNavigationBarItem(icon: Icon(CupertinoIcons.creditcard), activeIcon: Icon(CupertinoIcons.creditcard_fill), label: 'Birikim'),
+                  BottomNavigationBarItem(icon: Icon(CupertinoIcons.chart_pie), activeIcon: Icon(CupertinoIcons.chart_pie_fill), label: 'İstatistik'),
+                  BottomNavigationBarItem(icon: Icon(CupertinoIcons.flag), activeIcon: Icon(CupertinoIcons.flag_fill), label: 'Hedefler'),
+                  BottomNavigationBarItem(icon: Icon(CupertinoIcons.settings), activeIcon: Icon(CupertinoIcons.settings_solid), label: 'Ayarlar'),
                 ],
               ),
             ),
@@ -237,4 +143,3 @@ class _HomeShellPageState extends ConsumerState<HomeShellPage> {
     );
   }
 }
-
