@@ -44,9 +44,9 @@ class PnlDetailsPage extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 14,
                           color: summary.totalProfitLoss > 0
-                              ? Colors.green
+                              ? const Color(0xFF42866B)
                               : (summary.totalProfitLoss < 0
-                                  ? Colors.red
+                                  ? const Color(0xFFB75F59)
                                   : Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                         ),
                       ),
@@ -56,9 +56,9 @@ class PnlDetailsPage extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 13,
                           color: summary.realizedProfitLoss > 0
-                              ? Colors.green
+                              ? const Color(0xFF42866B)
                               : (summary.realizedProfitLoss < 0
-                                  ? Colors.red
+                                  ? const Color(0xFFB75F59)
                                   : Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                         ),
                       ),
@@ -68,9 +68,9 @@ class PnlDetailsPage extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 13,
                           color: summary.unrealizedProfitLoss > 0
-                              ? Colors.green
+                              ? const Color(0xFF42866B)
                               : (summary.unrealizedProfitLoss < 0
-                                  ? Colors.red
+                                  ? const Color(0xFFB75F59)
                                   : Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                         ),
                       ),
@@ -206,8 +206,8 @@ class _RealizedPnlCard extends StatelessWidget {
     final isProfit = row.profitLoss > 0;
     final isLoss = row.profitLoss < 0;
     final color = isProfit
-        ? Colors.green
-        : (isLoss ? Colors.red : Theme.of(context).colorScheme.primary);
+        ? const Color(0xFF42866B)
+        : (isLoss ? const Color(0xFFB75F59) : Theme.of(context).colorScheme.primary);
 
     return Card(
       child: Padding(

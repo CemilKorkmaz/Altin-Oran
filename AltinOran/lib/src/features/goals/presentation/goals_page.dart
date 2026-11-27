@@ -196,7 +196,7 @@ class _GoalCard extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: isAsset
                         ? theme.colorScheme.primaryContainer.withOpacity(0.6)
-                        : Colors.green.withOpacity(0.15),
+                        : const Color(0xFF42866B).withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -211,19 +211,19 @@ class _GoalCard extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.2),
+                      color: const Color(0xFF42866B).withOpacity(0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.check_circle_rounded, size: 14, color: Colors.green.shade700),
+                        Icon(Icons.check_circle_rounded, size: 14, color: const Color(0xFF42866B)),
                         const SizedBox(width: 4),
                         Text(
                           'Tamamlandı',
                           style: theme.textTheme.labelSmall?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: Colors.green.shade700,
+                            color: const Color(0xFF42866B),
                           ),
                         ),
                       ],
@@ -273,7 +273,7 @@ class _GoalCard extends ConsumerWidget {
                 minHeight: 8,
                 backgroundColor: theme.colorScheme.surfaceContainerHighest,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  isComplete ? Colors.green : theme.colorScheme.primary,
+                  isComplete ? const Color(0xFF42866B) : theme.colorScheme.primary,
                 ),
               ),
             ),

@@ -68,7 +68,7 @@ class TransactionDetailPage extends ConsumerWidget {
           (tx.direction == TransactionDirection.buy ? 'Alış' : 'Satış');
     }
     final directionColor =
-        tx.direction == TransactionDirection.buy ? Colors.green : Colors.red;
+        tx.direction == TransactionDirection.buy ? const Color(0xFF42866B) : const Color(0xFFB75F59);
 
     final assetLabel = _isGoldAssetType(tx.assetType) && tx.goldPurity != null
         ? '${_assetTypeLabel(tx.assetType)} (${_goldPurityLabel(tx.goldPurity!)})'
@@ -77,8 +77,8 @@ class TransactionDetailPage extends ConsumerWidget {
     final unitLabel = _assetUnitLabel(tx.assetType);
 
     Color pnlColor(double v) {
-      if (v > 0) return Colors.green;
-      if (v < 0) return Colors.red;
+      if (v > 0) return const Color(0xFF42866B);
+      if (v < 0) return const Color(0xFFB75F59);
       return Theme.of(context).colorScheme.onSurface.withOpacity(0.7);
     }
 

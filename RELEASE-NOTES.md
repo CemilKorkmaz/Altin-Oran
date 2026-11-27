@@ -1,6 +1,6 @@
 # Altın Oran 0.3.0 — test sürümü
 
-- Baştan tasarlanan iOS esintili açık/koyu tema, tipografi, ana ekran, piyasa kartları ve daha sade beş sekmeli gezinme. İstatistik ve ayarlar Diğer menüsünde.
+- Yeni uygulama simgesi ve baştan tasarlanan iOS esintili açık/koyu tema, tipografi, ana ekran, piyasa kartları ve daha sade beş sekmeli gezinme. İstatistik ve ayarlar Diğer menüsünde.
 - Metal fiyatı ons/gram dönüşümleri ve yenileme davranışı düzeltildi; olmayan alış/satış, günlük yüksek/düşük ve güncelleme zamanları artık uydurulmuyor.
 - Frankfurter, Binance ve MetalPriceAPI verileri erişilebilirlik, anahtar/kota ve bölgesel kısıtlamalara bağlıdır. Bigpara verileri ayrıca HTTPS üzerinden yayınlanan `gold-api` backend'i gerektirir. Erişilemeyen veriler boş gösterilebilir.
 

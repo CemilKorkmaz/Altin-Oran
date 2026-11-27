@@ -884,7 +884,7 @@ class RatesPage extends ConsumerWidget {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  Icon(Icons.circle, size: 8, color: Colors.green.shade700),
+                  Icon(Icons.circle, size: 6, color: Theme.of(context).colorScheme.outline),
                   const SizedBox(width: 6),
                   Expanded(child: Text(
                     'Veriler kaynaklarına göre güncellenir',
@@ -1196,7 +1196,7 @@ class _RateCardState extends ConsumerState<_RateCard> {
     final change = item.changePercent;
     final isUp = (change ?? 0) >= 0;
     final changeColor =
-        change == null ? Colors.grey : (isUp ? Colors.green : Colors.red);
+        change == null ? Colors.grey : (isUp ? const Color(0xFF42866B) : const Color(0xFFB75F59));
 
     final allRatesItems = ref.watch(ratesListProvider);
     final vendors = allRatesItems
@@ -1292,7 +1292,7 @@ class _RateCardState extends ConsumerState<_RateCard> {
                       tooltip: widget.isFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle',
                       style: IconButton.styleFrom(minimumSize: const Size(40, 40), padding: EdgeInsets.zero),
                       icon: Icon(widget.isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
-                        size: 22, color: widget.isFavorite ? Colors.amber : theme.colorScheme.outline),
+                        size: 22, color: widget.isFavorite ? const Color(0xFFB38B4C) : theme.colorScheme.outline),
                     ),
                   ],
                 ),
@@ -1314,9 +1314,9 @@ class _RateCardState extends ConsumerState<_RateCard> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(child: _detailPriceCell(context, 'DÜŞÜK', low, Colors.red)),
+                  Expanded(child: _detailPriceCell(context, 'DÜŞÜK', low, const Color(0xFFB75F59))),
                   const SizedBox(width: 8),
-                  Expanded(child: _detailPriceCell(context, 'YÜKSEK', high, Colors.green)),
+                  Expanded(child: _detailPriceCell(context, 'YÜKSEK', high, const Color(0xFF42866B))),
                 ],
               ),
               const SizedBox(height: 14),
@@ -1351,7 +1351,7 @@ class _RateCardState extends ConsumerState<_RateCard> {
                       icon: Icon(
                         widget.isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
                         size: 18,
-                        color: widget.isFavorite ? Colors.amber : null,
+                        color: widget.isFavorite ? const Color(0xFFB38B4C) : null,
                       ),
                       label: Text(widget.isFavorite ? 'Favoriden Çıkar' : 'Favorilere Ekle'),
                       style: OutlinedButton.styleFrom(
@@ -1658,13 +1658,13 @@ class _RateCardState extends ConsumerState<_RateCard> {
                           ),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(999),
-                            color: Colors.green.withOpacity(0.12),
+                            color: const Color(0xFF42866B).withOpacity(0.12),
                           ),
                           child: Text(
                             'Makas %${spreadPct.toStringAsFixed(2)}',
                             style: const TextStyle(
                               fontSize: 11,
-                              color: Colors.green,
+                              color: const Color(0xFF42866B),
                             ),
                           ),
                         ),
@@ -1698,7 +1698,7 @@ class _RateCardState extends ConsumerState<_RateCard> {
                 widget.isFavorite
                     ? Icons.star_rounded
                     : Icons.star_border_rounded,
-                color: widget.isFavorite ? Colors.amber : Colors.grey,
+                color: widget.isFavorite ? const Color(0xFFB38B4C) : Colors.grey,
               ),
             ),
           ],
@@ -1819,14 +1819,14 @@ class VendorComparisonPage extends ConsumerWidget {
                                           decoration: BoxDecoration(
                                             borderRadius:
                                                 BorderRadius.circular(999),
-                                            color: Colors.green
+                                            color: const Color(0xFF42866B)
                                                 .withOpacity(0.12),
                                           ),
                                           child: Text(
                                             'Makas %${spreadPct.toStringAsFixed(2)}',
                                             style: const TextStyle(
                                               fontSize: 11,
-                                              color: Colors.green,
+                                              color: const Color(0xFF42866B),
                                             ),
                                           ),
                                         ),
@@ -2078,20 +2078,20 @@ class _LiveStatusBadgeState extends State<_LiveStatusBadge>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.green.withOpacity(0.15),
+            color: const Color(0xFF42866B).withOpacity(0.15),
             borderRadius: BorderRadius.circular(999),
           ),
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.circle, size: 8, color: Colors.green),
+              Icon(Icons.circle, size: 8, color: const Color(0xFF42866B)),
               SizedBox(width: 6),
               Text(
                 'Piyasa',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Colors.green,
+                  color: const Color(0xFF42866B),
                 ),
               ),
             ],

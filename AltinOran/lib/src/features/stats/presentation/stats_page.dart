@@ -40,7 +40,7 @@ void _showDayDetailPopup(BuildContext context, WidgetRef ref, StatsChartPoint po
   final theme = Theme.of(context);
   final transactions = ref.read(transactionsProvider);
   final onDay = transactionsOnDay(transactions, point.date);
-  final pnlColor = point.totalPnl >= 0 ? Colors.green : Colors.red;
+  final pnlColor = point.totalPnl >= 0 ? const Color(0xFF42866B) : const Color(0xFFB75F59);
   showDialog<void>(
     context: context,
     builder: (ctx) => AlertDialog(
@@ -87,7 +87,7 @@ void _showDayDetailPopup(BuildContext context, WidgetRef ref, StatsChartPoint po
                   Icon(
                     tx.direction == TransactionDirection.buy ? Icons.add_circle_outline : Icons.remove_circle_outline,
                     size: 18,
-                    color: tx.direction == TransactionDirection.buy ? Colors.green : Colors.red,
+                    color: tx.direction == TransactionDirection.buy ? const Color(0xFF42866B) : const Color(0xFFB75F59),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -476,7 +476,7 @@ class _RealizedPnlOverTimeChartState extends ConsumerState<_RealizedPnlOverTimeC
         .entries
         .map((e) => FlSpot(e.key.toDouble(), (e.value.totalPnl - minPnl) / span))
         .toList();
-    final pnlColor = points.last.totalPnl >= 0 ? Colors.green : Colors.red;
+    final pnlColor = points.last.totalPnl >= 0 ? const Color(0xFF42866B) : const Color(0xFFB75F59);
     return Card(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
@@ -492,7 +492,7 @@ class _RealizedPnlOverTimeChartState extends ConsumerState<_RealizedPnlOverTimeC
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: (points[_touchedSpotIndex!].totalPnl >= 0 ? Colors.green : Colors.red).withOpacity(0.15),
+                  color: (points[_touchedSpotIndex!].totalPnl >= 0 ? const Color(0xFF42866B) : const Color(0xFFB75F59)).withOpacity(0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -628,7 +628,7 @@ class _MonthlyPnlBarChart extends ConsumerWidget {
     final groupsSpace = count <= 2 ? 28.0 : (count <= 4 ? 18.0 : 12.0);
     final barGroups = monthly.asMap().entries.map((e) {
       final pnl = e.value.pnl;
-      final color = pnl >= 0 ? Colors.green : Colors.red;
+      final color = pnl >= 0 ? const Color(0xFF42866B) : const Color(0xFFB75F59);
       final clamped = pnl.clamp(-maxY, maxY);
       final fromY = clamped <= 0 ? clamped : 0.0;
       final toY = clamped >= 0 ? clamped : 0.0;
@@ -701,7 +701,7 @@ class _MonthlyPnlBarChart extends ConsumerWidget {
                                 Text(
                                   '${p.pnl >= 0 ? '+' : ''}₺${formatMoney(p.pnl)}',
                                   style: theme.textTheme.labelSmall?.copyWith(
-                                    color: p.pnl >= 0 ? Colors.green : Colors.red,
+                                    color: p.pnl >= 0 ? const Color(0xFF42866B) : const Color(0xFFB75F59),
                                     fontWeight: FontWeight.w700,
                                     fontSize: 11,
                                   ),
@@ -787,8 +787,8 @@ class _GeneralStatsCard extends StatelessWidget {
     final unrealized = summary.unrealizedProfitLoss;
 
     Color pnlColor(double v) {
-      if (v > 0) return Colors.green;
-      if (v < 0) return Colors.red;
+      if (v > 0) return const Color(0xFF42866B);
+      if (v < 0) return const Color(0xFFB75F59);
       return theme.colorScheme.onSurface.withOpacity(0.7);
     }
 
@@ -998,7 +998,7 @@ class _PerAssetPnlCard extends ConsumerWidget {
               final asset = key.assetType;
               final pnl = e.value;
               final color =
-                  pnl > 0 ? Colors.green : (pnl < 0 ? Colors.red : Theme.of(context).colorScheme.onSurface.withOpacity(0.7));
+                  pnl > 0 ? const Color(0xFF42866B) : (pnl < 0 ? const Color(0xFFB75F59) : Theme.of(context).colorScheme.onSurface.withOpacity(0.7));
               final label = _isGoldAssetType(asset) && key.goldPurity != null
                   ? '${_assetTypeLabel(asset)} (${_goldPurityLabel(key.goldPurity!)})'
                   : _assetTypeLabel(asset);

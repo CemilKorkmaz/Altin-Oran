@@ -144,9 +144,9 @@ class PortfolioPage extends ConsumerWidget {
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: summary.totalProfitLoss > 0
-                                      ? Colors.green
+                                      ? const Color(0xFF42866B)
                                       : (summary.totalProfitLoss < 0
-                                          ? Colors.red
+                                          ? const Color(0xFFB75F59)
                                           : Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                                 ),
                               ),
@@ -156,9 +156,9 @@ class PortfolioPage extends ConsumerWidget {
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: summary.totalProfitLoss > 0
-                                        ? Colors.green
+                                        ? const Color(0xFF42866B)
                                         : (summary.totalProfitLoss < 0
-                                            ? Colors.red
+                                            ? const Color(0xFFB75F59)
                                             : Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                                   ),
                                 ),
@@ -322,7 +322,7 @@ class _TransactionHistoryList extends ConsumerWidget {
   ) {
     final isBuy = tx.direction == TransactionDirection.buy;
     final dateTimeLabel = dateFormatter.format(tx.dateTime);
-    final directionColor = isBuy ? Colors.green : Colors.red;
+    final directionColor = isBuy ? const Color(0xFF42866B) : const Color(0xFFB75F59);
     final directionLabel = isBuy ? 'Alış' : 'Satış';
     final sourceLabel = _priceSourceLabel(tx.priceSource, tx.isManualPrice);
     final sourceIcon = _priceSourceIcon(tx.priceSource, tx.isManualPrice);
@@ -514,7 +514,7 @@ class _HoldingsList extends ConsumerWidget {
               Text(
                 '${assetProfitLoss > 0 ? '+' : ''}₺${formatMoney(assetProfitLoss.abs())}',
                 style: TextStyle(
-                  color: assetProfitLoss > 0 ? Colors.green : Colors.red,
+                  color: assetProfitLoss > 0 ? const Color(0xFF42866B) : const Color(0xFFB75F59),
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
                 ),
@@ -818,7 +818,7 @@ class AssetDetailPage extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
-                              color: totalPnL > 0 ? Colors.green : (totalPnL < 0 ? Colors.red : Theme.of(context).colorScheme.onSurface),
+                              color: totalPnL > 0 ? const Color(0xFF42866B) : (totalPnL < 0 ? const Color(0xFFB75F59) : Theme.of(context).colorScheme.onSurface),
                             ),
                           ),
                           if (usdRateState.rate != null && usdRateState.rate! > 0)
@@ -826,7 +826,7 @@ class AssetDetailPage extends ConsumerWidget {
                               '≈ \$${(totalPnL / usdRateState.rate!).toStringAsFixed(0)}',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: totalPnL > 0 ? Colors.green : (totalPnL < 0 ? Colors.red : Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+                                color: totalPnL > 0 ? const Color(0xFF42866B) : (totalPnL < 0 ? const Color(0xFFB75F59) : Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                               ),
                             ),
                           const SizedBox(height: 8),
@@ -852,7 +852,7 @@ class AssetDetailPage extends ConsumerWidget {
                   ...filtered.map((tx) {
                     final isBuy = tx.direction == TransactionDirection.buy;
                     final directionColor =
-                        isBuy ? Colors.green : Colors.red;
+                        isBuy ? const Color(0xFF42866B) : const Color(0xFFB75F59);
                     final directionLabel =
                         globalDirectionLabels[tx.id] ?? (isBuy ? 'Alış' : 'Satış');
                     return Padding(

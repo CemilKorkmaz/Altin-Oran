@@ -205,9 +205,9 @@ class ProfitLossRing extends StatelessWidget {
 
     final Color ringColor;
     if (isProfit) {
-      ringColor = Colors.green;
+      ringColor = const Color(0xFF42866B);
     } else if (isLoss) {
-      ringColor = Colors.red;
+      ringColor = const Color(0xFFB75F59);
     } else {
       ringColor = theme.colorScheme.primary; // nötr durumda mavi ton
     }
