@@ -6,7 +6,6 @@ import '../../../core/widgets/empty_state_view.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../prices/domain/gold_price.dart';
 import '../../prices/application/gold_price_providers.dart';
-import '../../prices/domain/gold_price.dart';
 import '../../rates/presentation/rates_page.dart';
 import '../../alerts/application/notification_service.dart';
 import '../../alerts/application/price_alarm_providers.dart';

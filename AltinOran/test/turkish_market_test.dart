@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birikim_portfoy/src/features/prices/application/turkish_market_client.dart';
 import 'package:birikim_portfoy/src/features/prices/application/gold_price_providers.dart';
 import 'package:birikim_portfoy/src/features/rates/presentation/rates_page.dart';
+import 'package:birikim_portfoy/src/features/prices/domain/gold_price.dart';
 
 Map<String, dynamic> payload({String? timestamp}) => {
   'meta': {'status': 'success', 'tarih': timestamp ?? DateTime.now().toUtc().add(const Duration(hours: 3)).toIso8601String().substring(0, 19).replaceFirst('T', ' ')},
@@ -39,6 +40,11 @@ void main() {
     final failed = payload();
     (failed['meta'] as Map)['status'] = 'error';
     expect(TurkishMarketClient.parse(jsonEncode(failed)), isNull);
+  });
+  test('USD gold is converted before being displayed in a TRY portfolio', () {
+    final gold = GoldPrice(region: PriceRegion.usa, pricePerGram: 100, pricePerOunce: 3110, lastUpdated: DateTime.now());
+    expect(goldPricePerGramInTry(gold, 40), 4000);
+    expect(goldPricePerGramInTry(gold, null), isNull);
   });
   test('shared quote populates rates list and portfolio gold provider', () async {
     var calls = 0;

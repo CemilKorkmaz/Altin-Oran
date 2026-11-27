@@ -28,6 +28,8 @@ void main() {
     final bar = find.byType(BottomNavigationBar);
     await tester.tap(find.descendant(of: bar, matching: find.text('Kurlar')));
     await tester.pump();
+    await tester.ensureVisible(find.text('Kripto').first);
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.text('Kripto').first);
     await tester.pump();
     final ratesState = tester.state(find.byType(RatesPage));
@@ -49,6 +51,8 @@ void main() {
     for (final page in ['İstatistikler', 'Ayarlar']) {
       await tester.tap(find.text(page).first);
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 60));
+      expect(tester.takeException(), isNull, reason: '$page geçiş animasyonunda hata');
       await tester.pump(const Duration(milliseconds: 400));
       expect(tester.takeException(), isNull, reason: '$page ekranında hata');
       await tester.pageBack();
